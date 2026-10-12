@@ -7,14 +7,21 @@ file, and the same checks can run on your own computer before you commit.
 
 ## What the check does
 
-When you open a pull request, a check named `checks / lint` runs. It looks for four things:
+When you open a pull request, a check named `checks / lint` runs. It looks at seven things,
+and skips the ones for a language the repository does not use:
 
 1. Secrets. Any password, token or key committed anywhere in the repository's history fails
    the check.
 2. Python style. Code is formatted and linted with ruff, using the settings in
    `src/standards/configs/ruff.toml`. The settings cannot be changed inside your repository.
-3. YAML files are well formed.
-4. The rules in `docs/RULES.md`. Each rule says what it looks for, whether it blocks the merge
+3. R style. Code is formatted with Air and linted with lintr, using `src/standards/configs/air.toml`
+   and `src/standards/r/lintr_settings.R`. A package's help pages must match its code.
+4. JavaScript and TypeScript style and types, with ESLint, Prettier and the TypeScript compiler,
+   using the settings in `src/standards/configs/`.
+5. YAML and Markdown files are well formed.
+6. Tests. Python tests run with pytest, R tests with testthat and JavaScript tests with vitest,
+   when the repository has them.
+7. The rules in `docs/RULES.md`. Each rule says what it looks for, whether it blocks the merge
    or only warns, and how to fix a finding.
 
 A failing check prints one line per finding: the file, the line, the rule, and what to change.
@@ -51,7 +58,10 @@ def test_reconstruction(): ...
 ```
 
 The hosted check leaves those tests out and prints how many it left out and why. On your own
-machine, `pytest` with no options runs them all.
+machine, `pytest` with no options runs them all. R and JavaScript tests have the same marker:
+the R templates carry it as `needs("a reason")` in a helper file under their tests folder, and
+the web template carries it in its tests folder as well. Each template's README shows how to
+use it.
 
 ## Files for coding agents
 
@@ -92,6 +102,7 @@ here, and the check says so when they do not.
 
 Open a pull request here. The rule list is `src/standards/rules.py`; `docs/RULES.md` is
 rendered from it with `render-rules` and the files for coding agents with `render-agent`, and
-the self-test fails if either is out of date or if a rule has no planted example. Repositories pick up a merged change on their next pull request; the
-pre-commit hooks pick it up when the repository's `.pre-commit-config.yaml` is moved to the
-new version tag.
+the self-test fails if either is out of date or if a rule has no planted example. Repositories
+pick up a merged change on their next pull request; the pre-commit hooks pick it up when the
+repository's `.pre-commit-config.yaml` is moved to the new version tag, and the check says so
+when that file is behind.

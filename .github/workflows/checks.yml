@@ -75,16 +75,186 @@ jobs:
           rules-check --base "$BASE" --head "$HEAD" --pr-body ../pr_body.txt \
             --repo "$GITHUB_REPOSITORY" --standards-root ../standards
 
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      # Tools are called by full path under this folder, never through a script in the repository.
+      - name: Install the Node tools at the versions the standards pin
+        run: |
+          npm ci --prefix standards/src/standards/configs
+          echo "STANDARDS_NODE=$GITHUB_WORKSPACE/standards/src/standards/configs" >> "$GITHUB_ENV"
+
+      - name: Markdown
+        working-directory: repo
+        run: |
+          if git ls-files -- '.markdownlint*' '*/.markdownlint*' | grep .; then
+            echo "Remove the files above: the Markdown settings live in the standards repository."
+            exit 1
+          fi
+          if git ls-files -- '*.md' | grep -q .; then
+            "$STANDARDS_NODE/node_modules/.bin/markdownlint-cli2" \
+              --config "$STANDARDS_NODE/markdownlint-cli2.jsonc" "**/*.md"
+          fi
+
+      - name: Install the repository's packages
+        working-directory: repo
+        run: |
+          if [ -f package.json ]; then
+            npm ci
+          fi
+
+      - name: JavaScript and TypeScript lint
+        working-directory: repo
+        run: |
+          if [ -f package.json ]; then
+            "$STANDARDS_NODE/node_modules/.bin/eslint" \
+              --config "$STANDARDS_NODE/eslint.config.mjs" .
+          fi
+
+      - name: JavaScript and TypeScript format
+        working-directory: repo
+        run: |
+          if [ -f package.json ]; then
+            "$STANDARDS_NODE/node_modules/.bin/prettier" \
+              --config "$STANDARDS_NODE/prettierrc.yaml" --no-editorconfig \
+              --ignore-path .gitignore --check \
+              "**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts,css,html}"
+          fi
+
+      - name: Types
+        working-directory: repo
+        run: |
+          if [ -f package.json ]; then
+            "$STANDARDS_NODE/node_modules/.bin/tsc" --noEmit -p .
+          fi
+
+      - name: JavaScript and TypeScript tests
+        working-directory: repo
+        env:
+          STANDARDS_NO_NEEDS: "true"
+        run: |
+          if [ -f package.json ]; then
+            "$STANDARDS_NODE/node_modules/.bin/vitest" run --reporter=default \
+              --reporter="$STANDARDS_NODE/vitest-needs-reporter.mjs"
+          fi
+
       - name: Python tests
         id: python-tests
         working-directory: repo
         run: |
           if [ -f environment.yml ] && [ -d tests ]; then
             echo "conda=true" >> "$GITHUB_OUTPUT"
-          elif [ -f pyproject.toml ] && [ -d tests ]; then
-            python -m pip install --quiet -e .
+          elif git ls-files -- 'tests/*.py' | grep -q .; then
+            if [ -f pyproject.toml ]; then
+              python -m pip install --quiet -e .
+            fi
             python -m pytest -p standards.pytest_needs --no-needs --strict-markers tests
           fi
+
+      - name: Find the R files and how the repository declares its R packages
+        id: r
+        working-directory: repo
+        env:
+          VERSION_FIELD: 's/^(Config\/roxygen2\/version|RoxygenNote): *//p'
+        run: |
+          if ! git ls-files -- '*.R' '*.r' '*.Rmd' | grep -q .; then
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "found=true" >> "$GITHUB_OUTPUT"
+          if [ -f DESCRIPTION ]; then
+            roxygen="$(sed -n -E "$VERSION_FIELD" DESCRIPTION | head -n 1)"
+            if [ -z "$roxygen" ]; then
+              echo "DESCRIPTION records no roxygen2 version; run roxygen2::roxygenise(), commit."
+              exit 1
+            fi
+            echo "kind=package" >> "$GITHUB_OUTPUT"
+            echo "roxygen=$roxygen" >> "$GITHUB_OUTPUT"
+          elif [ -f renv.lock ]; then
+            echo "kind=renv" >> "$GITHUB_OUTPUT"
+          else
+            echo "kind=plain" >> "$GITHUB_OUTPUT"
+            echo "No DESCRIPTION and no renv.lock: no packages are installed for this repository."
+          fi
+
+      - name: Set up R, at the version renv.lock records when there is one
+        if: steps.r.outputs.found == 'true'
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ steps.r.outputs.kind == 'renv' && 'renv' || 'release' }}
+          working-directory: repo
+          use-public-rspm: true
+
+      - name: Install what DESCRIPTION declares, the package itself and the check's tools
+        if: steps.r.outputs.kind == 'package'
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          working-directory: repo
+          extra-packages: |
+            any::lintr
+            any::pkgload
+            any::testthat
+            roxygen2@${{ steps.r.outputs.roxygen }}
+            local::.
+
+      - name: Install the packages renv.lock records
+        if: steps.r.outputs.kind == 'renv'
+        uses: r-lib/actions/setup-renv@v2
+        with:
+          working-directory: repo
+
+      # Outside repo/ so the repository's renv library stays exactly as renv.lock has it.
+      - name: Install the check's tools in a library of their own
+        if: steps.r.outputs.kind == 'renv' || steps.r.outputs.kind == 'plain'
+        working-directory: ${{ runner.temp }}
+        env:
+          STANDARDS_R_LIB: ${{ runner.temp }}/standards-r-lib
+        run: |
+          mkdir -p "$STANDARDS_R_LIB"
+          Rscript -e 'install.packages(c("lintr", "testthat"), lib = Sys.getenv("STANDARDS_R_LIB"))'
+
+      - name: Install Air
+        if: steps.r.outputs.found == 'true'
+        uses: posit-dev/setup-air@v1
+        with:
+          version: "0.12.0"
+
+      # Air takes no settings path, so the central file replaces any the repository carries.
+      - name: R format
+        if: steps.r.outputs.found == 'true'
+        working-directory: repo
+        run: |
+          find . \( -name air.toml -o -name .air.toml \) -not -path './.git/*' -delete
+          cp "$(standards-config air.toml)" air.toml
+          status=0
+          air format . --check || status=$?
+          rm air.toml
+          git checkout --quiet -- .
+          exit "$status"
+
+      - name: R lint
+        if: steps.r.outputs.found == 'true'
+        working-directory: repo
+        env:
+          STANDARDS_R_LIB: ${{ runner.temp }}/standards-r-lib
+        run: Rscript ../standards/src/standards/r/run_lintr.R .
+
+      - name: R tests
+        if: steps.r.outputs.found == 'true'
+        working-directory: repo
+        env:
+          STANDARDS_NO_NEEDS: "true"
+          STANDARDS_R_LIB: ${{ runner.temp }}/standards-r-lib
+        run: |
+          if [ -d tests/testthat ]; then
+            Rscript ../standards/src/standards/r/run_tests.R .
+          fi
+
+      - name: R help pages match the code
+        if: steps.r.outputs.kind == 'package'
+        working-directory: repo
+        run: Rscript ../standards/src/standards/r/roxygen_drift.R .
 
   # Building a conda environment takes minutes, so these tests report beside the lint job.
   conda-tests:
