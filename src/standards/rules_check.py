@@ -6,7 +6,7 @@ messages in that range and the pull request text. Each finding names the
 rule, the file and the line; a blocking finding makes the exit code 1.
 
 Usage:
-    slop-check [--repo-dir DIR] [--base SHA] [--head SHA] [--pr-body FILE]
+    rules-check [--repo-dir DIR] [--base SHA] [--head SHA] [--pr-body FILE]
                [--repo OWNER/NAME] [--standards-root DIR]
 
 Without --base only the tree rules run, which is how the pre-commit hook
@@ -746,19 +746,46 @@ def is_manifest(path):
     )
 
 
-def dependency_names(path, added):
+def conda_dependencies(head_text):
+    """Package names under the dependencies key of a conda environment file."""
+    try:
+        data = yaml.safe_load(head_text) or {}
+    except yaml.YAMLError:
+        return set()
+    names = set()
+    for entry in data.get("dependencies") or []:
+        if isinstance(entry, str):
+            names.add(re.split(r"[=<>!\s]", entry, maxsplit=1)[0])
+    return names
+
+
+def dependency_names(path, added, head_text):
     """Return (line, package) for each added line declaring a dependency."""
     name = PurePosixPath(path).name
     key = "requirements" if name.startswith("requirements") else name
     shape = DEPENDENCY_SHAPES[key]
+    conda = conda_dependencies(head_text) if key == "environment.yml" else None
     found = []
     for n, text in added:
         if key == "requirements" and text.lstrip().startswith(("#", "-")):
             continue
+        if conda is not None and text.rstrip().endswith(":"):
+            continue
         match = shape.match(text)
-        if match:
-            found.append((n, match.group(1)))
+        if not match:
+            continue
+        if conda is not None and match.group(1) not in conda:
+            continue
+        found.append((n, match.group(1)))
     return found
+
+
+def head_file(repo_dir, head, path):
+    """Text of the file at the head commit, or '' when it is not there."""
+    try:
+        return git(repo_dir, "show", f"{head}:{path}")
+    except subprocess.CalledProcessError:
+        return ""
 
 
 def check_diff(report, repo_dir, base, head, body):
@@ -780,7 +807,8 @@ def check_diff(report, repo_dir, base, head, body):
         ):
             report.add("stray-markdown", path, 0)
         if is_manifest(path):
-            for n, name in dependency_names(path, change["added"]):
+            head_text = head_file(repo_dir, head, path)
+            for n, name in dependency_names(path, change["added"], head_text):
                 if name.lower() not in dependencies:
                     report.add(
                         "dependency-added",

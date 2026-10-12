@@ -7,6 +7,6 @@ exempt:
       - silent-row-drop
       - silenced-check
     reason: the rule examples in this file are the shapes those rules look for
-  - path: src/standards/slop_check.py
+  - path: src/standards/rules_check.py
     rules: [machine-path, silenced-check]
     reason: the patterns those rules look for are defined on this file's lines

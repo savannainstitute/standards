@@ -56,7 +56,7 @@ machine, `pytest` with no options runs them all.
 ## Layout of this repository
 
 - `src/standards/`: the `standards` Python package. `src/standards/rules.py` is the rule list,
-  `src/standards/slop_check.py` is the check, `src/standards/configs/` holds the linter settings.
+  `src/standards/rules_check.py` is the check, `src/standards/configs/` holds the linter settings.
 - `docs/RULES.md`: the rule list, rendered from `src/standards/rules.py`.
 - `.github/workflows/checks.yml`: the reusable workflow every repository calls.
 - `.pre-commit-hooks.yaml`: the hooks a repository's `.pre-commit-config.yaml` points at.

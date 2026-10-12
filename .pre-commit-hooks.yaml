@@ -1,7 +1,7 @@
-- id: slop-check
+- id: rules-check
   name: rules in the rule list
   description: Runs the tree rules over the whole repository; the pull request rules run in CI.
-  entry: slop-check
+  entry: rules-check
   language: python
   pass_filenames: false
   always_run: true

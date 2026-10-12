@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from standards import slop_check
+from standards import rules_check
 
 FIXTURES = Path(__file__).parent / "fixtures"
 STANDARDS_ROOT = Path(__file__).parents[1]
@@ -73,7 +73,7 @@ def findings_for(tmp_path, scenario, standards_root):
     repo = tmp_path / "repo"
     repo.mkdir()
     base, head, body = build(repo, scenario)
-    findings = slop_check.run(
+    findings = rules_check.run(
         repo,
         base=base,
         head=head,
@@ -99,7 +99,7 @@ def test_every_rule_is_planted():
     planted = set()
     for name in ("a", "b"):
         planted |= {row[0] for row in load(name)[1]}
-    assert planted == set(slop_check.rules.BY_ID)
+    assert planted == set(rules_check.rules.BY_ID)
 
 
 def test_exempt_entry_removes_only_its_rule_on_its_path(tmp_path):
@@ -135,7 +135,7 @@ def test_blocking_exit_code(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
     base, head, body = build(repo, scenario)
-    code = slop_check.main(
+    code = rules_check.main(
         [
             "--repo-dir",
             str(repo),

@@ -70,7 +70,7 @@ jobs:
           HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           printf '%s' "$PR_BODY" > ../pr_body.txt
-          slop-check --base "$BASE" --head "$HEAD" --pr-body ../pr_body.txt \
+          rules-check --base "$BASE" --head "$HEAD" --pr-body ../pr_body.txt \
             --repo "$GITHUB_REPOSITORY" --standards-root ../standards
 
       - name: Python tests

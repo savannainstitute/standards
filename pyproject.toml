@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.scripts]
-slop-check = "standards.slop_check:main"
+rules-check = "standards.rules_check:main"
 render-rules = "standards.render_rules:main"
 standards-ruff = "standards.tools:main_ruff"
 standards-yamllint = "standards.tools:main_yamllint"

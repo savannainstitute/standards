@@ -14,6 +14,7 @@
   "analysis_v2.py": "print(1)\n",
   "configs/settings.yaml": "# one\n# two\n# three\nkey: value\n",
   "data/raw/sites_2024-05-01.csv": "site,x\na,1\n",
+  "environment.yml": "name: pkg\nchannels:\n  - conda-forge\ndependencies:\n  - python=3.13\n  - numpy\n  - pip\n  - pip:\n      - -e .\n",
   "nb/demo.ipynb": "{\"cells\": [{\"cell_type\": \"code\", \"execution_count\": 1, \"metadata\": {}, \"source\": [\"print(1)\"], \"outputs\": [{\"name\": \"stdout\", \"output_type\": \"stream\", \"text\": [\"1\\n\"]}]}], \"metadata\": {}, \"nbformat\": 4, \"nbformat_minor\": 5}",
   "notes.md": "scratch notes\n",
   "pyproject.toml": "[project]\nname = \"pkg\"\nversion = \"0.1.0\"\ndependencies = [\n    \"numpy==2.3.0\",\n    \"pandas==2.3.0\",\n]\n",

@@ -2,9 +2,9 @@
 repos:
   - repo: local
     hooks:
-      - id: slop-check
+      - id: rules-check
         name: rules in the rule list
-        entry: slop-check
+        entry: rules-check
         language: python
         additional_dependencies: ["."]
         pass_filenames: false
