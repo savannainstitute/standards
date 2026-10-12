@@ -1,0 +1,306 @@
+"""Claude Code hook: catch the organization's style rules while editing.
+
+Usage: rules_hook.py pre-write | post-write | pre-shell
+
+Claude Code passes the tool call as JSON on standard input. pre-write refuses
+a Write or Edit whose new text breaks the typography rule. post-write reads
+the file just written and tells the agent which lines the pull request check
+will report. pre-shell refuses a recursive delete that reaches outside the
+project. The patterns come from rules_hook.json beside this file, which the
+organization's standards repository renders from the same list its check
+uses. This hook is a convenience; the pull request check is what blocks.
+"""
+
+import json
+import os
+import posixpath
+import re
+import sys
+from pathlib import Path
+
+RECURSIVE_FLAG = re.compile(r"^(-[A-Za-z]*[rR][A-Za-z]*|--recursive|/s)$")
+POWERSHELL_RECURSE = re.compile(r"^-r", re.I)
+DELETE_COMMANDS = {"rm", "remove-item", "ri", "rmdir", "rd", "del", "erase"}
+HOME_PREFIXES = ("~", "$home", "${home}", "$env:userprofile", "%userprofile%")
+SEGMENT = re.compile(r"&&|\|\||[;|\n]")
+DRIVE = re.compile(r"^([A-Za-z]):(/|$)")
+SKIPPED_COMMENT_STARTS = ("#!", "#'", "# -*-")
+
+
+def load_patterns():
+    """Return the patterns file that sits beside this script."""
+    path = Path(__file__).with_name("rules_hook.json")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def file_kind(path, patterns):
+    """Return code, markdown, config or None for a file the check skips."""
+    suffix = Path(path).suffix.lower()
+    for kind in ("code", "markdown", "config"):
+        if suffix in patterns[f"{kind}_suffixes"]:
+            return kind
+    return None
+
+
+def comment_of(line, marker):
+    """Return the comment part of a code line, or an empty string."""
+    quote = None
+    i = 0
+    while i < len(line):
+        ch = line[i]
+        if quote:
+            if ch == "\\":
+                i += 1
+            elif ch == quote:
+                quote = None
+        elif ch in "\"'":
+            quote = ch
+        elif line.startswith(marker, i):
+            return line[i:]
+        i += 1
+    return ""
+
+
+def comment_marker(path, patterns):
+    """Return the line comment marker for the file's language."""
+    slash = Path(path).suffix.lower() in patterns["slash_suffixes"]
+    return "//" if slash else "#"
+
+
+def prose_lines(path, text, kind, patterns):
+    """Yield (line number, prose) for each comment or Markdown line."""
+    marker = comment_marker(path, patterns)
+    in_fence = False
+    for n, line in enumerate(text.splitlines(), 1):
+        if kind == "markdown":
+            if line.lstrip().startswith("```"):
+                in_fence = not in_fence
+            elif not in_fence:
+                yield n, line
+        elif kind == "code":
+            comment = comment_of(line, marker)
+            if comment:
+                yield n, comment
+
+
+def has_caps_emphasis(text, patterns):
+    """Whether the text carries one of the emphasis words in capitals."""
+    for match in re.finditer(patterns["caps_token"], text):
+        if match.group(0) not in patterns["emphasis_words"]:
+            continue
+        start, end = match.span()
+        before = text[start - 1] if start else " "
+        after = text[end] if end < len(text) else " "
+        glued = (
+            before in patterns["glued_before"]
+            or after in patterns["glued_after"]
+        )
+        if not glued:
+            return True
+    return False
+
+
+def typography_findings(path, text, patterns):
+    """Return one message per line of text that breaks the typography rule."""
+    kind = file_kind(path, patterns)
+    if kind is None:
+        return []
+    found = []
+    for n, line in enumerate(text.splitlines(), 1):
+        if re.search(patterns["characters"], line):
+            found.append(
+                f"line {n}: Em dash or curly quote; use a comma, a period "
+                "or a straight quote."
+            )
+        if re.search(patterns["emoji"], line):
+            found.append(f"line {n}: Emoji; remove it.")
+    for n, prose in prose_lines(path, text, kind, patterns):
+        if kind == "markdown" and re.search(patterns["bold"], prose):
+            found.append(f"line {n}: Bold in Markdown; use plain text.")
+        if has_caps_emphasis(prose, patterns):
+            found.append(
+                f"line {n}: A word in capitals for emphasis; use a plain word."
+            )
+    return found
+
+
+def is_full_comment(line, marker):
+    """Whether the line holds a comment and nothing else."""
+    stripped = line.strip()
+    return stripped.startswith(marker) and not stripped.startswith(
+        SKIPPED_COMMENT_STARTS
+    )
+
+
+def banner_lines(path, text, patterns):
+    """Return the first line of each comment block the banner rule reports."""
+    marker = comment_marker(path, patterns)
+    found = []
+    start, length, dividers = None, 0, []
+    for n, line in enumerate([*text.splitlines(), ""], 1):
+        if is_full_comment(line, marker):
+            start = start or n
+            length += 1
+            if re.match(patterns["divider"], line):
+                dividers.append(n)
+            continue
+        found.extend([start] if length >= 3 else dividers)
+        start, length, dividers = None, 0, []
+    return found
+
+
+def review_findings(path, text, patterns):
+    """Return (line, rule id) pairs the pull request check will report."""
+    kind = file_kind(path, patterns)
+    if kind not in ("code", "markdown"):
+        return []
+    found = set()
+    for n, prose in prose_lines(path, text, kind, patterns):
+        if any(re.search(p, prose, re.I) for p in patterns["contrast"]):
+            found.add((n, "contrast"))
+        if re.search(patterns["sales"], prose, re.I):
+            found.add((n, "sales-vocabulary"))
+        if kind == "code" and re.search(patterns["narration"], prose, re.I):
+            found.add((n, "narration"))
+    if kind == "code":
+        found.update((n, "banner") for n in banner_lines(path, text, patterns))
+    return sorted(found)
+
+
+def normalize(path):
+    """Return the path with forward slashes and a Git Bash style drive."""
+    path = path.replace("\\", "/")
+    drive = DRIVE.match(path)
+    if drive:
+        path = "/" + drive.group(1).lower() + "/" + path[drive.end() :]
+    return posixpath.normpath(path)
+
+
+def is_absolute(path):
+    """Whether the path is absolute on Windows or a POSIX system."""
+    return path.startswith(("/", "\\")) or bool(
+        DRIVE.match(path.replace("\\", "/"))
+    )
+
+
+def outside_project(target, working_dir, project):
+    """Whether a delete target is not strictly inside the project folder."""
+    if target.lower().startswith(HOME_PREFIXES):
+        return True
+    if target.startswith(("$", "%")):
+        return False
+    if is_absolute(target):
+        full = normalize(target)
+    else:
+        full = normalize(working_dir + "/" + target)
+    return not full.startswith(normalize(project) + "/")
+
+
+def recursive_delete_targets(command):
+    """Yield the targets of each recursive delete in a shell command."""
+    for segment in SEGMENT.split(command):
+        tokens = [t.strip("\"'") for t in segment.split()]
+        if not tokens:
+            continue
+        name = posixpath.basename(tokens[0].replace("\\", "/")).lower()
+        if name not in DELETE_COMMANDS:
+            continue
+        flags = [t for t in tokens[1:] if t.startswith(("-", "/s", "/S"))]
+        recursive = any(
+            RECURSIVE_FLAG.match(f)
+            or (name != "rm" and POWERSHELL_RECURSE.match(f))
+            for f in flags
+        )
+        if recursive:
+            yield from (t for t in tokens[1:] if t not in flags and t != "--")
+
+
+def deny(reason):
+    """Print the response that refuses the tool call."""
+    response = {
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "deny",
+            "permissionDecisionReason": reason,
+        }
+    }
+    print(json.dumps(response))
+
+
+def pre_write(call, patterns):
+    """Refuse a Write or Edit whose new text breaks the typography rule."""
+    tool_input = call["tool_input"]
+    key = "content" if "content" in tool_input else "new_string"
+    found = typography_findings(
+        tool_input["file_path"], tool_input[key], patterns
+    )
+    if found:
+        deny(
+            "The organization's typography rule would block this on the "
+            "pull request. " + " ".join(found)
+        )
+
+
+def post_write(call, patterns):
+    """Tell the agent which lines of the written file the check reports."""
+    path = call["tool_input"]["file_path"]
+    if not Path(path).is_file():
+        return
+    text = Path(path).read_text(encoding="utf-8", errors="replace")
+    found = review_findings(path, text, patterns)
+    if not found:
+        return
+    lines = [
+        f"The pull request check will report these in {Path(path).name}; "
+        "AGENTS.md says how to fix each:"
+    ]
+    lines.extend(f"line {n}: {rule}" for n, rule in found)
+    response = {
+        "hookSpecificOutput": {
+            "hookEventName": "PostToolUse",
+            "additionalContext": "\n".join(lines),
+        }
+    }
+    print(json.dumps(response))
+
+
+def pre_shell(call):
+    """Refuse a recursive delete that reaches outside the project folder."""
+    working_dir = call["cwd"]
+    project = os.environ.get("CLAUDE_PROJECT_DIR") or working_dir
+    command = call["tool_input"]["command"]
+    for target in recursive_delete_targets(command):
+        if outside_project(target, working_dir, project):
+            deny(
+                f"This command deletes {target} and everything under it, "
+                "which is outside this project or is the project folder "
+                "itself. Ask the person to run it themselves if it is "
+                "intended."
+            )
+            return
+
+
+def main(argv=None):
+    """Read the tool call from standard input and run the named mode."""
+    argv = sys.argv[1:] if argv is None else argv
+    if len(argv) != 1 or argv[0] not in (
+        "pre-write",
+        "post-write",
+        "pre-shell",
+    ):
+        raise SystemExit("usage: rules_hook.py pre-write|post-write|pre-shell")
+    raw = sys.stdin.read()
+    if not raw.strip():
+        return 0
+    call = json.loads(raw)
+    if argv[0] == "pre-shell":
+        pre_shell(call)
+    elif argv[0] == "pre-write":
+        pre_write(call, load_patterns())
+    else:
+        post_write(call, load_patterns())
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

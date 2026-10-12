@@ -244,7 +244,14 @@ PLACEHOLDER = re.compile(
 TEST_PATH = re.compile(r"(^|/)tests?(/|_)|_test\.|\.test\.|test_")
 SOURCE_DIRS = ("src/", "R/", "packages/")
 # The root documents each project layout names besides README.md.
-ROOT_DOCUMENTS = {"CHANGELOG.md", "NEWS.md", "LICENSE.md", "HOSTING.md"}
+ROOT_DOCUMENTS = {
+    "AGENTS.md",
+    "CLAUDE.md",
+    "CHANGELOG.md",
+    "NEWS.md",
+    "LICENSE.md",
+    "HOSTING.md",
+}
 REMOVED_TEST = re.compile(r"^\s*(def test_|test_that\(|(it|test)\()")
 ATTRIBUTION = re.compile(
     r"Co-authored-by:.*(claude|anthropic)|Generated (with|by) \[?Claude"

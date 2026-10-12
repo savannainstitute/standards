@@ -322,9 +322,9 @@ RULES = (
         True,
         DIFF,
         "A pull request that adds a Markdown file outside docs/, other than "
-        "a README.md or the root CHANGELOG.md, NEWS.md, LICENSE.md or "
-        "HOSTING.md, lists it in the pull request text under a Docs added "
-        "heading.",
+        "a README.md or the root AGENTS.md, CLAUDE.md, CHANGELOG.md, "
+        "NEWS.md, LICENSE.md or HOSTING.md, lists it in the pull request "
+        "text under a Docs added heading.",
         "Move the file under docs/, or list it under a Docs added heading "
         "with one line on why it exists.",
     ),

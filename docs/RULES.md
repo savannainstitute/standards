@@ -362,7 +362,7 @@ To fix it: Read the value from the environment or a file outside the repo. For a
 
 Blocks. Looks at the pull request's changes.
 
-A pull request that adds a Markdown file outside docs/, other than a README.md or the root CHANGELOG.md, NEWS.md, LICENSE.md or HOSTING.md, lists it in the pull request text under a Docs added heading.
+A pull request that adds a Markdown file outside docs/, other than a README.md or the root AGENTS.md, CLAUDE.md, CHANGELOG.md, NEWS.md, LICENSE.md or HOSTING.md, lists it in the pull request text under a Docs added heading.
 
 To fix it: Move the file under docs/, or list it under a Docs added heading with one line on why it exists.
 

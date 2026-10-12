@@ -53,10 +53,34 @@ def test_reconstruction(): ...
 The hosted check leaves those tests out and prints how many it left out and why. On your own
 machine, `pytest` with no options runs them all.
 
+## Files for coding agents
+
+Every repository carries the same six files for people who work with a coding agent such as
+Claude Code, Codex or Gemini:
+
+- `AGENTS.md`: the rules, written as instructions. Codex reads it on its own.
+- `CLAUDE.md`: one line that makes Claude Code read `AGENTS.md`.
+- `.gemini/settings.json`: makes Gemini read `AGENTS.md`.
+- `.claude/settings.json`: turns off the attribution lines Claude Code adds to commits and pull
+  requests, and runs the hook below.
+- `.claude/hooks/rules_hook.py` and `.claude/hooks/rules_hook.json`: a hook that stops Claude Code
+  from writing an em dash, a curly quote, an emoji, bold or a word in capitals for emphasis, tells
+  it which lines the check will report after it writes a file, and stops it from deleting a
+  folder outside the project. The hook needs Python on your computer and does nothing without
+  it.
+
+These files are a convenience and can be switched off on your own computer. The check on the
+pull request is what blocks. A repository may add its own notes to `AGENTS.md` and `CLAUDE.md`
+below the marker line; everything above it, and the other four files, must match the copies
+here, and the check says so when they do not.
+
 ## Layout of this repository
 
 - `src/standards/`: the `standards` Python package. `src/standards/rules.py` is the rule list,
   `src/standards/rules_check.py` is the check, `src/standards/configs/` holds the linter settings.
+- `src/standards/agent/`: the organization's copy of the files for coding agents. `AGENTS.md`
+  and the hook's patterns are rendered from the rule list with `render-agent`, which also
+  refreshes the copies at the root of this repository and in each template.
 - `docs/RULES.md`: the rule list, rendered from `src/standards/rules.py`.
 - `.github/workflows/checks.yml`: the reusable workflow every repository calls.
 - `.pre-commit-hooks.yaml`: the hooks a repository's `.pre-commit-config.yaml` points at.
@@ -67,7 +91,7 @@ machine, `pytest` with no options runs them all.
 ## Changing a rule
 
 Open a pull request here. The rule list is `src/standards/rules.py`; `docs/RULES.md` is
-rendered from it with `render-rules`, and the self-test fails if the two disagree or if a rule
-has no planted example. Repositories pick up a merged change on their next pull request; the
+rendered from it with `render-rules` and the files for coding agents with `render-agent`, and
+the self-test fails if either is out of date or if a rule has no planted example. Repositories pick up a merged change on their next pull request; the
 pre-commit hooks pick it up when the repository's `.pre-commit-config.yaml` is moved to the
 new version tag.
