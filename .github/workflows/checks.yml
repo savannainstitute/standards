@@ -226,7 +226,7 @@ jobs:
         working-directory: repo
         run: |
           find . \( -name air.toml -o -name .air.toml \) -not -path './.git/*' -delete
-          cp "$(standards-config air.toml)" air.toml
+          cp ../standards/src/standards/configs/air.toml air.toml
           status=0
           air format . --check || status=$?
           rm air.toml
