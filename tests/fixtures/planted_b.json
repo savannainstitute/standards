@@ -1,0 +1,18 @@
+{
+ "base": {
+  "README.md": "# Pipeline\n\nA pipeline.\n",
+  "pyproject.toml": "[project]\nname = \"pkg\"\nversion = \"0.1.0\"\ndependencies = [\n    \"numpy==2.3.0\",\n]\n",
+  "src/pkg/__init__.py": "",
+  "src/pkg/core.py": "def add(a, b):\n    return a + b\n",
+  "tests/test_core.py": "from pkg.core import add\n\n\ndef test_add():\n    assert add(1, 2) == 3\n\n\ndef test_sub():\n    assert add(1, -1) == 0\n"
+ },
+ "commit_message": "Document add\n",
+ "head": {
+  "README.md": "# Pipeline\n\nA pipeline.\n",
+  "pyproject.toml": "[project]\nname = \"pkg\"\nversion = \"0.1.0\"\ndependencies = [\n    \"numpy==2.3.0\",\n]\n",
+  "src/pkg/__init__.py": "",
+  "src/pkg/core.py": "\"\"\"Core arithmetic.\"\"\"\n\n\ndef add(a, b):\n    \"\"\"Return the sum.\"\"\"\n    return a + b\n",
+  "tests/test_core.py": "from pkg.core import add\n\n\ndef test_add():\n    assert add(1, 2) == 3\n\n\ndef test_sub():\n    assert add(1, -1) == 0\n"
+ },
+ "pr_body": "Small change.\n"
+}

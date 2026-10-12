@@ -1,0 +1,36 @@
+# This repository checks itself with its own hooks from the working copy.
+repos:
+  - repo: local
+    hooks:
+      - id: slop-check
+        name: rules in the rule list
+        entry: slop-check
+        language: python
+        additional_dependencies: ["."]
+        pass_filenames: false
+        always_run: true
+      - id: ruff-check
+        name: ruff check
+        entry: standards-ruff check --fix
+        language: python
+        additional_dependencies: ["."]
+        types_or: [python, pyi]
+      - id: ruff-format
+        name: ruff format
+        entry: standards-ruff format
+        language: python
+        additional_dependencies: ["."]
+        types_or: [python, pyi]
+      - id: yamllint
+        name: yamllint
+        entry: standards-yamllint
+        language: python
+        additional_dependencies: ["."]
+        types: [yaml]
+      - id: render-rules
+        name: docs/RULES.md is current
+        entry: render-rules --check
+        language: python
+        additional_dependencies: ["."]
+        pass_filenames: false
+        always_run: true

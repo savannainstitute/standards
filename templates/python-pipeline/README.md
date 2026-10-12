@@ -1,0 +1,42 @@
+# Pipeline name
+
+One paragraph on what this pipeline produces, from which inputs, for whom.
+
+## Inputs and outputs
+
+`data/README.md` says where each input comes from and how to fetch it. Inputs go under the
+data folder's inputs subfolder and are never modified; everything the pipeline writes goes
+under its outputs subfolder.
+
+## Running it
+
+Create the environment once, then run the pipeline through its command:
+
+```text
+conda env create -f environment.yml
+conda activate pipeline
+pipeline --help
+```
+
+Each stage is a subcommand. The command name and the stages are declared in `pyproject.toml`.
+
+## Layout
+
+- `src/pipeline/`: the code, one module per stage, with `src/pipeline/cli.py` as the entry
+  point. Rename the folder and the `name` in `pyproject.toml` to your pipeline's name when you
+  start.
+- `tests/`: one test file per stage. Every expected number in a test carries a comment deriving
+  it from the planted input.
+- A notebooks folder, when one is needed, holds walkthroughs only. Outputs are cleared before a
+  notebook is committed.
+- A docs folder holds anything longer than this file.
+- `data/`: inputs and outputs, described in `data/README.md`.
+
+## Checks
+
+Every pull request runs the organization's checks. To run them before committing:
+
+```text
+pip install pre-commit
+pre-commit install
+```

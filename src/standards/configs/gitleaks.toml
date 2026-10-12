@@ -1,0 +1,6 @@
+# gitleaks' default rule set. Per-repo allowances for published test fixtures live under
+# overrides/<repo>/ in this repository, never here.
+title = "Savanna Institute secret scan"
+
+[extend]
+useDefault = true

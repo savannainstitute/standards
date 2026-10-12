@@ -1,0 +1,10 @@
+# yamllint's defaults, except that GitHub reads "on" as a word, and the checksum line in the
+# check workflow is 82 columns.
+extends: default
+
+rules:
+  document-start: disable
+  truthy:
+    check-keys: false
+  line-length:
+    max: 100
