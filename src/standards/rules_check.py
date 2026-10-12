@@ -24,7 +24,7 @@ from pathlib import Path, PurePosixPath
 
 import yaml
 
-from standards import rules, standards_copy
+from standards import rules, shared_files
 
 CODE_SUFFIXES = {
     ".py",
@@ -696,7 +696,7 @@ def check_tree(report, repo_dir, allowlist):
             check_markdown_file(report, repo_dir, path, text)
         else:
             check_config_file(report, path, text)
-    for path, message in standards_copy.findings(repo_dir):
+    for path, message in shared_files.findings(repo_dir):
         report.add("standards-copy", path, 0, message)
 
 

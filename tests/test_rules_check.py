@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from standards import rules_check, standards_copy
+from standards import rules_check, shared_files
 
 FIXTURES = Path(__file__).parent / "fixtures"
 STANDARDS_ROOT = Path(__file__).parents[1]
@@ -42,7 +42,7 @@ def build(repo, scenario):
     """Build the scenario as a git repo; return (base sha, head sha, body)."""
     git(repo, "init", "-q", "-b", "main")
     if scenario.get("with_standards_copies"):
-        standards_copy.write_copies(repo)
+        shared_files.write_copies(repo)
     write_tree(repo, scenario["base"])
     git(repo, "add", "-A")
     git(repo, "commit", "-q", "-m", "Base")
