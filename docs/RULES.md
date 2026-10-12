@@ -358,6 +358,14 @@ A string assigned to a name like password, token, secret or api_key is not commi
 
 To fix it: Read the value from the environment or a file outside the repo. For a public test fixture, add the comment and the cited allowlist entry.
 
+## standards-copy
+
+Blocks. Looks at the files copied from the standards repository.
+
+The caller workflow, the files for coding agents and the version the pre-commit hooks are pinned to match the standards repository's copies. Text below the marker line in AGENTS.md and CLAUDE.md belongs to the repository and is not compared.
+
+To fix it: Copy the file the finding names from the template for this kind of project in the standards repository, or set the rev it names.
+
 ## stray-markdown
 
 Blocks. Looks at the pull request's changes.

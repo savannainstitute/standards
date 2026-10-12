@@ -318,6 +318,17 @@ RULES = (
         "entry.",
     ),
     Rule(
+        "standards-copy",
+        True,
+        "the files copied from the standards repository",
+        "The caller workflow, the files for coding agents and the version "
+        "the pre-commit hooks are pinned to match the standards "
+        "repository's copies. Text below the marker line in AGENTS.md and "
+        "CLAUDE.md belongs to the repository and is not compared.",
+        "Copy the file the finding names from the template for this kind "
+        "of project in the standards repository, or set the rev it names.",
+    ),
+    Rule(
         "stray-markdown",
         True,
         DIFF,

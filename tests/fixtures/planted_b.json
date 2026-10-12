@@ -14,5 +14,6 @@
   "src/pkg/core.py": "\"\"\"Core arithmetic.\"\"\"\n\n\ndef add(a, b):\n    \"\"\"Return the sum.\"\"\"\n    return a + b\n",
   "tests/test_core.py": "from pkg.core import add\n\n\ndef test_add():\n    assert add(1, 2) == 3\n\n\ndef test_sub():\n    assert add(1, -1) == 0\n"
  },
- "pr_body": "Small change.\n"
+ "pr_body": "Small change.\n",
+ "with_standards_copies": true
 }
