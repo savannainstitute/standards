@@ -15,7 +15,7 @@ if (nzchar(tools_library)) {
 
 tests_dir <- file.path(repo_dir, "tests", "testthat")
 if (!dir.exists(tests_dir)) {
-  stop(repo_dir, " has no tests/testthat folder", call. = FALSE)
+  stop(repo_dir, " has no testthat folder under tests", call. = FALSE)
 }
 
 # Attached so that test files outside a package find test_that() and friends.

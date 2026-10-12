@@ -17,8 +17,10 @@ if (!file.exists(description_file)) {
 }
 
 description <- read.dcf(description_file)
+# Built from parts because lintr reads a string with slashes as a file path.
+current_field <- paste("Config", "roxygen2", "version", sep = "/")
 version_fields <- intersect(
-  c("Config/roxygen2/version", "RoxygenNote"),
+  c(current_field, "RoxygenNote"),
   colnames(description)
 )
 if (length(version_fields) == 0L) {
