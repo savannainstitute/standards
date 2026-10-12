@@ -1,0 +1,27 @@
+{
+ "base": {
+  "README.md": "# Pipeline\n\nA pipeline.\n",
+  "pyproject.toml": "[project]\nname = \"pkg\"\nversion = \"0.1.0\"\ndependencies = [\n    \"numpy==2.3.0\",\n]\n",
+  "src/pkg/__init__.py": "",
+  "src/pkg/core.py": "def add(a, b):\n    return a + b\n",
+  "tests/test_core.py": "from pkg.core import add\n\n\ndef test_add():\n    assert add(1, 2) == 3\n\n\ndef test_sub():\n    assert add(1, -1) == 0\n"
+ },
+ "commit_message": "Add things, it's a fix, not a feature\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)\n",
+ "head": {
+  ".DS_Store": "x",
+  "R/clean.R": "#' Clean a frame.\n#'\n#' @param x a frame\n#' @export\nclean <- function(x) {\n  y <- tryCatch(read.csv(x), error = function(e) NULL)\n  z <- na.omit(y)\n  doi <- \"10.1000/xyz123\"\n  if (!file.exists(x)) y <- data.frame(sample = rnorm(10))\n  return(z)\n}\n",
+  "README.md": "# Pipeline\n\nA **robust** and comprehensive pipeline \u2014 see `src/pkg/missing.py` and `scripts/run.sh`.\n\nRun `src/pkg/core.py` to start. It's fast, never slow.\n",
+  "analysis_v2.py": "print(1)\n",
+  "configs/settings.yaml": "# one\n# two\n# three\nkey: value\n",
+  "data/raw/sites_2024-05-01.csv": "site,x\na,1\n",
+  "environment.yml": "name: pkg\nchannels:\n  - conda-forge\ndependencies:\n  - python=3.13\n  - numpy\n  - pip\n  - pip:\n      - -e .\n",
+  "nb/demo.ipynb": "{\"cells\": [{\"cell_type\": \"code\", \"execution_count\": 1, \"metadata\": {}, \"source\": [\"print(1)\"], \"outputs\": [{\"name\": \"stdout\", \"output_type\": \"stream\", \"text\": [\"1\\n\"]}]}], \"metadata\": {}, \"nbformat\": 4, \"nbformat_minor\": 5}",
+  "notes.md": "scratch notes\n",
+  "pyproject.toml": "[project]\nname = \"pkg\"\nversion = \"0.1.0\"\ndependencies = [\n    \"numpy==2.3.0\",\n    \"pandas==2.3.0\",\n]\n",
+  "src/pkg/__init__.py": "",
+  "src/pkg/core.py": "\"\"\"Core arithmetic.\n\nOriginally written on 2023-04-01 for the old pipeline.\n\"\"\"\nimport os\n\n# ---------------------------------------\n# Helpers\n# ---------------------------------------\n\nTHRESHOLD = 42\n\n\ndef add(a, b):\n    # now we handle negative numbers as requested\n    return a + b\n\n\ndef load(path=\"C:\\\\Users\\\\me\\\\data.csv\"):\n    # This isn't a cache, it's a lookup table\n    value = os.environ.get(\"HOME\", None)\n    password = \"hunter2hunter2\"\n    return value, password  # noqa\n\n\ndef draft():\n    raise NotImplementedError\n",
+  "src/pkg/ok.py": "\"\"\"Fine module.\"\"\"\nURL = \"https://example.org/a/very/long/path\"  # noqa: E501  the URL cannot wrap\nLIMIT = 79  # PEP 8 line length\n",
+  "tests/test_core.py": "import pytest\n\nfrom pkg.core import add\n\n\n@pytest.mark.skip\ndef test_add():\n    assert True\n"
+ },
+ "pr_body": "This isn't a refactor, it's a rewrite.\n\nRobust changes.\n"
+}

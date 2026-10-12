@@ -1,0 +1,19 @@
+# Line length 79 and quote style preserve come from the organization's two Python pipelines;
+# the rule sets are their union plus the codes the rule list in rules.py assigns to ruff.
+line-length = 79
+target-version = "py313"
+extend-exclude = ["*.ipynb"]
+
+[lint]
+select = [
+    "E", "W", "F", "I", "N", "D",
+    "ARG", "ERA", "BLE", "S110", "S112", "PGH", "RUF100", "PT", "B011", "PLR0124",
+]
+pydocstyle = { convention = "pep257" }
+
+[lint.per-file-ignores]
+"__init__.py" = ["D104"]
+"tests/**" = ["D100", "D103"]
+
+[format]
+quote-style = "preserve"

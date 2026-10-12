@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pipeline"
+version = "0.1.0"
+description = "One sentence on what the pipeline produces"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.scripts]
+pipeline = "pipeline.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

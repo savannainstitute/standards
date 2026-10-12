@@ -1,0 +1,82 @@
+name: checks
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: >-
+          Label of a private repository's own machine. Public repositories
+          always run on GitHub's Linux runner, which costs them nothing.
+        type: string
+        required: false
+        default: ubuntu-latest
+
+jobs:
+  lint:
+    runs-on: ${{ (github.event.repository.private && inputs.runner) || 'ubuntu-latest' }}
+    steps:
+      - name: Check out the repository under test
+        uses: actions/checkout@v7
+        with:
+          path: repo
+          fetch-depth: 0
+
+      - name: Check out the standards at the version this workflow was called at
+        uses: actions/checkout@v7
+        with:
+          repository: savannainstitute/standards
+          ref: ${{ job.workflow_sha }}
+          path: standards
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Install the standards package, which pins every tool
+        run: python -m pip install --quiet ./standards
+
+      - name: Install gitleaks
+        run: |
+          curl -sSL -o gitleaks.tar.gz \
+            "$RELEASES/v$VERSION/gitleaks_${VERSION}_linux_x64.tar.gz"
+          echo "$SHA256  gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf gitleaks.tar.gz gitleaks
+        env:
+          RELEASES: https://github.com/gitleaks/gitleaks/releases/download
+          VERSION: 8.30.1
+          SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+
+      - name: Secrets anywhere in the history
+        working-directory: repo
+        run: ../gitleaks git --config "$(standards-config gitleaks.toml)" --redact --no-banner .
+
+      - name: Python lint and format
+        working-directory: repo
+        run: |
+          if git ls-files -- '*.py' | grep -q .; then
+            ruff check --config "$(standards-config ruff.toml)" .
+            ruff format --check --config "$(standards-config ruff.toml)" .
+          fi
+
+      - name: YAML
+        working-directory: repo
+        run: yamllint -c "$(standards-config yamllint.yaml)" .
+
+      - name: Rules in the rule list
+        working-directory: repo
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          printf '%s' "$PR_BODY" > ../pr_body.txt
+          rules-check --base "$BASE" --head "$HEAD" --pr-body ../pr_body.txt \
+            --repo "$GITHUB_REPOSITORY" --standards-root ../standards
+
+      - name: Python tests
+        working-directory: repo
+        run: |
+          if [ -f pyproject.toml ] && [ -d tests ]; then
+            python -m pip install --quiet -e .
+            python -m pytest -p standards.pytest_needs --no-needs --strict-markers tests
+          fi

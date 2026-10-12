@@ -1,0 +1,12 @@
+repos:
+  - repo: https://github.com/savannainstitute/standards
+    rev: v1.0.0
+    hooks:
+      - id: rules-check
+      - id: ruff-check
+      - id: ruff-format
+      - id: yamllint
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.9.1
+    hooks:
+      - id: nbstripout
