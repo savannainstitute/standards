@@ -14,6 +14,8 @@ on:
 jobs:
   lint:
     runs-on: ${{ (github.event.repository.private && inputs.runner) || 'ubuntu-latest' }}
+    outputs:
+      conda: ${{ steps.python-tests.outputs.conda }}
     steps:
       - name: Check out the repository under test
         uses: actions/checkout@v7
@@ -74,9 +76,42 @@ jobs:
             --repo "$GITHUB_REPOSITORY" --standards-root ../standards
 
       - name: Python tests
+        id: python-tests
         working-directory: repo
         run: |
-          if [ -f pyproject.toml ] && [ -d tests ]; then
+          if [ -f environment.yml ] && [ -d tests ]; then
+            echo "conda=true" >> "$GITHUB_OUTPUT"
+          elif [ -f pyproject.toml ] && [ -d tests ]; then
             python -m pip install --quiet -e .
             python -m pytest -p standards.pytest_needs --no-needs --strict-markers tests
           fi
+
+  # Building a conda environment takes minutes, so these tests report beside the lint job.
+  conda-tests:
+    needs: lint
+    if: needs.lint.outputs.conda == 'true'
+    runs-on: ${{ (github.event.repository.private && inputs.runner) || 'ubuntu-latest' }}
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - name: Check out the repository under test
+        uses: actions/checkout@v7
+
+      - name: Check out the standards at the version this workflow was called at
+        uses: actions/checkout@v7
+        with:
+          repository: savannainstitute/standards
+          ref: ${{ job.workflow_sha }}
+          path: .standards
+
+      - name: Build the environment the repository declares
+        uses: mamba-org/setup-micromamba@v3
+        with:
+          environment-file: environment.yml
+          cache-environment: true
+
+      - name: Python tests in that environment
+        env:
+          PYTHONPATH: .standards/src
+        run: python -m pytest -p standards.pytest_needs --no-needs --strict-markers tests
