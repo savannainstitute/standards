@@ -1,0 +1,2 @@
+# Provisional line length: 80 is Prettier's own default for printWidth (prettier.io/docs/options).
+printWidth: 80

@@ -1,0 +1,18 @@
+{
+  "name": "standards-node-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pins the Node tools the check runs. Each version is the newest the npm registry listed when it was pinned; typescript is held below 6.1 by the range typescript-eslint accepts.",
+  "license": "MIT",
+  "dependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.12.0",
+    "globals": "17.13.0",
+    "markdownlint-cli2": "0.23.3",
+    "prettier": "3.9.10",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.2",
+    "vite": "8.3.4",
+    "vitest": "5.0.4"
+  }
+}
