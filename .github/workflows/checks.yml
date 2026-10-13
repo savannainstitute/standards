@@ -136,7 +136,9 @@ jobs:
         run: |
           if [ -f package.json ]; then
             "$STANDARDS_NODE/node_modules/.bin/vitest" run --reporter=default \
-              --reporter="$STANDARDS_NODE/vitest-needs-reporter.mjs"
+              --reporter="$STANDARDS_NODE/vitest-needs-reporter.mjs" \
+              --coverage.enabled --coverage.provider=v8 --coverage.reporter=text \
+              --coverage.include='src/**'
           fi
 
       - name: Python tests
@@ -149,7 +151,9 @@ jobs:
             if [ -f pyproject.toml ]; then
               python -m pip install --quiet -e .
             fi
-            python -m pytest -p standards.pytest_needs --no-needs --strict-markers tests
+            python -m coverage run --source=. --omit='tests/*,*/tests/*,.claude/*,*/.claude/*' \
+              -m pytest -p standards.pytest_needs --no-needs --strict-markers tests
+            python -m coverage report --skip-empty
           fi
 
       - name: Find the R files and how the repository declares its R packages
