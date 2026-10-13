@@ -4,6 +4,8 @@
 
 Changes collect here and are released together when a repository needs them.
 
+- `decision-attribution` blocks the merge. It no longer reads "said", and reads "per" only
+  before a possessive or a date, after a measurement on every repository in the organization.
 - `standards-copy` accepts a pre-commit pin to any release with the current major version, so
   a new release no longer asks every repository to move its pin.
 

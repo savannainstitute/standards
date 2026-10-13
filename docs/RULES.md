@@ -78,7 +78,7 @@ because the previous
 
 ## decision-attribution
 
-Warns. Looks at comments, docstrings, Markdown, configuration files, commit
+Blocks. Looks at comments, docstrings, Markdown, configuration files, commit
 messages and the pull request text.
 
 A file states what holds, not who decided it or when: no person and date in
