@@ -2,10 +2,13 @@ run_planted <- function(test_lines) {
   repo <- withr::local_tempdir(.local_envir = parent.frame())
   tests <- file.path(repo, "tests", "testthat")
   dir.create(tests, recursive = TRUE)
-  helper <- test_path("..", "..", "src", "standards", "r", "helper-needs.R")
-  file.copy(helper, file.path(tests, "helper-needs.R"))
+  scripts <- testthat::test_path("..", "..", "src", "standards", "r")
+  file.copy(
+    file.path(scripts, "helper-needs.R"),
+    file.path(tests, "helper-needs.R")
+  )
   writeLines(test_lines, file.path(tests, "test-planted.R"))
-  script <- test_path("..", "..", "src", "standards", "r", "run_tests.R")
+  script <- file.path(scripts, "run_tests.R")
   output <- suppressWarnings(system2(
     file.path(R.home("bin"), "Rscript"),
     c(shQuote(normalizePath(script)), shQuote(repo)),
