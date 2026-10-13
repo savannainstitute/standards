@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.0
+
+- A new rule, `untested-code`, blocks: a code file that defines a function or a class needs its
+  own test file, and a repository with code and no tests fails.
+- Test coverage is reported for Python and JavaScript, and a repository needs 75% of its lines
+  covered. One that joined below that may not fall below its recorded start, and each pull
+  request must cover 90% of the code lines it changes until the repository reaches 75%.
+- A new rule, `decision-attribution`, warns on a decision credited to a person or a date.
+- The `typography` rule no longer looks for curly quotes.
+- Ruff allows a single capital letter, such as `X`, as a variable name.
+- `standards-copy` reports a shared file that git does not track.
+- Every repository moves its pre-commit `rev` to `v1.2.0`.
+
 ## 1.1.0
 
 - The files for coding agents (`AGENTS.md`, `CLAUDE.md`, the Claude Code settings and hook, the
