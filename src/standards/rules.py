@@ -319,8 +319,8 @@ RULES = (
         True,
         CODE,
         "A code file that defines a function or a class has its own test "
-        "file, named as the layouts name it: test_<name>.py, "
-        "test-<name>.R or <name>.test.ts. A repository with code and no "
+        "file, named as the layouts name it: `test_<name>.py`, "
+        "`test-<name>.R` or `<name>.test.ts`. A repository with code and no "
         "test file at all fails once. Files that define nothing, such as "
         "scripts that only run steps, need no test file of their own.",
         "Add the test file the finding names, testing what the code file "
