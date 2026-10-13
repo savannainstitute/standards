@@ -52,6 +52,22 @@ jobs:
         working-directory: repo
         run: ../gitleaks git --config "$(standards-config gitleaks.toml)" --redact --no-banner .
 
+      - name: Dockerfiles
+        working-directory: repo
+        env:
+          RELEASES: https://github.com/hadolint/hadolint/releases/download
+          VERSION: 2.15.1
+          SHA256: c7187db94eeeeca956519a6af171adc31453941a1e777961f6e680f697c8c507
+        run: |
+          dockerfiles="$(git ls-files -- '*Dockerfile*' '*Containerfile*')"
+          if [ -n "$dockerfiles" ]; then
+            curl -sSL -o ../hadolint "$RELEASES/v$VERSION/hadolint-linux-x86_64"
+            echo "$SHA256  ../hadolint" | sha256sum -c -
+            chmod +x ../hadolint
+            # shellcheck disable=SC2086 # one argument per tracked Dockerfile
+            ../hadolint --config "$(standards-config hadolint.yaml)" $dockerfiles
+          fi
+
       - name: Python lint and format
         working-directory: repo
         run: |
