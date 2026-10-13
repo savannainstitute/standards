@@ -36,7 +36,11 @@ test_that("a passing test and a needs() test pass and print the reason", {
 test_that("a skip without needs() fails the run", {
   result <- run_planted("test_that('later', skip('not yet'))")
   expect_identical(result$status, 1L)
-  expect_true(any(grepl("Skipped without needs()", result$output, fixed = TRUE)))
+  expect_true(any(grepl(
+    "Skipped without needs()",
+    result$output,
+    fixed = TRUE
+  )))
 })
 
 test_that("a failing test fails the run", {
