@@ -76,6 +76,28 @@ historically
 because the previous
 ```
 
+## decision-attribution
+
+Warns. Looks at comments, docstrings, Markdown, configuration files, commit
+messages and the pull request text.
+
+A file states what holds, not who decided it or when: no person and date in
+parentheses, no decision credited to a person or a date, no line saying what a
+person asked for or wants.
+
+To fix it: State the decision itself. The pull request and git history record
+who made it and when.
+
+Shapes the check looks for:
+
+```text
+(Name, 2026-10-12)
+approved by Name
+decided on 2026-10-12
+Name asked that
+per Name's request
+```
+
 ## chat-residue
 
 Blocks. Looks at code files.

@@ -80,6 +80,15 @@ NARRATION = re.compile(
     r"|changed (this|it) to|this (now|fix) )\b",
     re.I,
 )
+PERSON = r"[A-Z][a-z]+"
+ISO_DATE = r"\d{4}-\d{2}-\d{2}"
+DECIDED = r"(?i:decided|approved|agreed|confirmed|requested|chose|chosen)"
+DECISION_ATTRIBUTION = re.compile(
+    rf"\(\s*{PERSON}(\s+{PERSON})?,\s*{ISO_DATE}\s*\)"
+    rf"|\b{DECIDED}\b(\s+\w+){{0,3}}?\s+(by\s+{PERSON}|on\s+{ISO_DATE})"
+    rf"|\b{PERSON}\s+(asked|said|wants|prefers|decided|approved|requested)\b"
+    rf"|\bper\s+{PERSON}('s)?\b"
+)
 DIVIDER = re.compile(r"^\s*(#|//)\s*[-=*_]{5,}")
 HISTORY = re.compile(
     r"\b20\d\d-\d\d-\d\d\b|\boriginally\b|\bhistorically\b"
@@ -98,7 +107,7 @@ CHAT_PROSE = [
     re.compile(r"TODO: implement", re.I),
 ]
 EM_DASH = re.compile(chr(0x2014))
-EMOJI =re.compile("[\U0001f000-\U0001faff\u2600-\u27bf\u2b50\u2b55]")
+EMOJI = re.compile("[\U0001f000-\U0001faff\u2600-\u27bf\u2b50\u2b55]")
 BOLD = re.compile(r"(\*\*|__)[^*_\n]+\1")
 CAPS_TOKEN = re.compile(r"[A-Z][A-Z0-9]{2,}")
 EMPHASIS_WORDS = {
@@ -432,6 +441,8 @@ def check_prose_line(report, path, n, text, in_code_comment, with_caps):
             report.add("contrast", path, n)
     if SALES.search(text):
         report.add("sales-vocabulary", path, n)
+    if DECISION_ATTRIBUTION.search(text):
+        report.add("decision-attribution", path, n)
     if in_code_comment and NARRATION.search(text):
         report.add("narration", path, n)
     if with_caps and caps_emphasis(text):
@@ -616,9 +627,11 @@ def check_readme_paths(report, repo_dir, path, lines):
 
 
 def check_config_file(report, path, text):
-    """Apply the typography rule to a configuration file."""
+    """Apply the typography and attribution rules to a configuration file."""
     for n, line in enumerate(text.splitlines(), 1):
         check_typography_line(report, path, n, line)
+        if DECISION_ATTRIBUTION.search(line):
+            report.add("decision-attribution", path, n)
 
 
 def check_notebook(report, repo_dir, path):

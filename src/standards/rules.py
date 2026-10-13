@@ -82,6 +82,23 @@ RULES = (
         ("2023-04-01", "originally", "historically", "because the previous"),
     ),
     Rule(
+        "decision-attribution",
+        False,
+        "comments, docstrings, Markdown, configuration files, " + TEXT,
+        "A file states what holds, not who decided it or when: no person "
+        "and date in parentheses, no decision credited to a person or a "
+        "date, no line saying what a person asked for or wants.",
+        "State the decision itself. The pull request and git history "
+        "record who made it and when.",
+        (
+            "(Name, 2026-10-12)",
+            "approved by Name",
+            "decided on 2026-10-12",
+            "Name asked that",
+            "per Name's request",
+        ),
+    ),
+    Rule(
         "chat-residue",
         True,
         CODE,

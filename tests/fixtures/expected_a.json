@@ -42,5 +42,6 @@
  ["standards-copy", ".claude/hooks/rules_hook.py", 0],
  ["standards-copy", ".claude/hooks/rules_hook.json", 0],
  ["standards-copy", ".gemini/settings.json", 0],
- ["untested-code", "R/clean.R", 0]
+ ["untested-code", "R/clean.R", 0],
+ ["decision-attribution", "docs/history.md", 1]
 ]

@@ -13,6 +13,9 @@ exempt:
   - path: .github/workflows/checks.yml
     rules: [standards-copy]
     reason: this repository holds the shared workflow under that name; self-checks.yml calls it
+  - path: tests/fixtures/planted_a.json
+    rules: [decision-attribution]
+    reason: the planted example of that rule is plain ASCII, so escaping cannot hide it
   - path: src/standards/configs/vitest-needs-reporter.mjs
     rules: [untested-code]
     reason: this repository has no Node project to run a vitest test of its own reporter

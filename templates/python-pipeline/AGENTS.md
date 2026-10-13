@@ -216,6 +216,20 @@ list with every shape the check looks for is at
   because the previous
   ```
 
+- `decision-attribution`: A file states what holds, not who decided it or when:
+  no person and date in parentheses, no decision credited to a person or a
+  date, no line saying what a person asked for or wants. To fix it: State the
+  decision itself. The pull request and git history record who made it and
+  when.
+
+  ```text
+  (Name, 2026-10-12)
+  approved by Name
+  decided on 2026-10-12
+  Name asked that
+  per Name's request
+  ```
+
 - `typography`: No em dashes or emoji anywhere; no bold in Markdown; none of
   the words below written in capitals for emphasis in a comment or Markdown. A
   capitalized identifier or acronym is fine. To fix it: Use a comma, a period
