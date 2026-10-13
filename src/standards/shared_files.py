@@ -6,6 +6,7 @@ pinned to. findings() names each one that is missing or out of date and says
 how to bring it back in line.
 """
 
+import re
 import subprocess
 from importlib import metadata, resources
 from pathlib import Path
@@ -17,6 +18,7 @@ from standards import agent_files
 HOOKS_URL = "https://github.com/savannainstitute/standards"
 CALLER_PATH = ".github/workflows/checks.yml"
 PRE_COMMIT_PATH = ".pre-commit-config.yaml"
+RELEASE_TAG = re.compile(r"^v(\d+)\.\d+\.\d+$")
 
 
 def caller_text():
@@ -28,6 +30,13 @@ def caller_text():
 def pinned_rev():
     """Return the tag a repository's pre-commit hooks are pinned to."""
     return "v" + metadata.version("savannainstitute-standards")
+
+
+def in_current_major(rev):
+    """Whether rev is a release tag with the same major version as this one."""
+    match = RELEASE_TAG.match(rev or "")
+    current = RELEASE_TAG.match(pinned_rev())
+    return bool(match) and match.group(1) == current.group(1)
 
 
 def pre_commit_rev(repo_dir):
@@ -59,7 +68,7 @@ def findings(repo_dir):
             )
         )
     rev = pre_commit_rev(repo_dir)
-    if rev != pinned_rev():
+    if not in_current_major(rev):
         found.append(
             (
                 PRE_COMMIT_PATH,
