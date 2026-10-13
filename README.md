@@ -19,8 +19,12 @@ and skips the ones for a language the repository does not use:
 4. JavaScript and TypeScript style and types, with ESLint, Prettier and the TypeScript compiler,
    using the settings in `src/standards/configs/`.
 5. YAML and Markdown files are well formed.
-6. Tests. Python tests run with pytest, R tests with testthat and JavaScript tests with vitest,
-   when the repository has them.
+6. Tests. Python tests run with pytest, R tests with testthat and JavaScript tests with vitest.
+   Every file of code that defines a function needs its own test file. The tests must run at
+   least 75% of the lines of Python and JavaScript code. A repository that was below that
+   when it joined the standard may not fall below where it started, and each pull request
+   must test at least 90% of the code lines it changes until the repository reaches 75%. The
+   numbers are in `src/standards/configs/coverage.yaml`.
 7. The rules in `docs/RULES.md`. Each rule says what it looks for, whether it blocks the merge
    or only warns, and how to fix a finding.
 

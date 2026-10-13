@@ -21,6 +21,7 @@ dependencies = [
 rules-check = "standards.rules_check:main"
 render-rules = "standards.render_rules:main"
 render-agent = "standards.render_agent:main"
+coverage-gate = "standards.coverage_gate:main"
 standards-ruff = "standards.tools:main_ruff"
 standards-yamllint = "standards.tools:main_yamllint"
 standards-config = "standards.tools:main_config"

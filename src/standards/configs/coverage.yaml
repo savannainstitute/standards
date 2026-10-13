@@ -1,0 +1,4 @@
+# 75 and 90 are what Google's Testing Blog, "Code Coverage Best Practices" (2020), calls
+# "commendable" for a project and "a good lower threshold" for each change's new code.
+floor_percent: 75
+changed_lines_percent: 90
