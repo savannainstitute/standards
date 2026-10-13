@@ -21,7 +21,8 @@
   "src/pkg/__init__.py": "",
   "src/pkg/core.py": "\"\"\"Core arithmetic.\n\nOriginally written on 2023-04-01 for the old pipeline.\n\"\"\"\nimport os\n\n# ---------------------------------------\n# Helpers\n# ---------------------------------------\n\nTHRESHOLD = 42\n\n\ndef add(a, b):\n    # now we handle negative numbers as requested\n    return a + b\n\n\ndef load(path=\"C:\\\\Users\\\\me\\\\data.csv\"):\n    # This isn't a cache, it's a lookup table\n    value = os.environ.get(\"HOME\", None)\n    password = \"hunter2hunter2\"\n    return value, password  # noqa\n\n\ndef draft():\n    raise NotImplementedError\n",
   "src/pkg/ok.py": "\"\"\"Fine module.\"\"\"\nURL = \"https://example.org/a/very/long/path\"  # noqa: E501  the URL cannot wrap\nLIMIT = 79  # PEP 8 line length\n",
-  "tests/test_core.py": "import pytest\n\nfrom pkg.core import add\n\n\n@pytest.mark.skip\ndef test_add():\n    assert True\n"
+  "tests/test_core.py": "import pytest\n\nfrom pkg.core import add\n\n\n@pytest.mark.skip\ndef test_add():\n    assert True\n",
+  "docs/history.md": "Line length is 79 (Zack, 2026-10-12).\n"
  },
  "pr_body": "This isn't a refactor, it's a rewrite.\n\nRobust changes.\n"
 }

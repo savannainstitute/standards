@@ -80,6 +80,15 @@ NARRATION = re.compile(
     r"|changed (this|it) to|this (now|fix) )\b",
     re.I,
 )
+PERSON = r"[A-Z][a-z]+"
+ISO_DATE = r"\d{4}-\d{2}-\d{2}"
+DECIDED = r"(?i:decided|approved|agreed|confirmed|requested|chose|chosen)"
+DECISION_ATTRIBUTION = re.compile(
+    rf"\(\s*{PERSON}(\s+{PERSON})?,\s*{ISO_DATE}\s*\)"
+    rf"|\b{DECIDED}\b(\s+\w+){{0,3}}?\s+(by\s+{PERSON}|on\s+{ISO_DATE})"
+    rf"|\b{PERSON}\s+(asked|said|wants|prefers|decided|approved|requested)\b"
+    rf"|\bper\s+{PERSON}('s)?\b"
+)
 DIVIDER = re.compile(r"^\s*(#|//)\s*[-=*_]{5,}")
 HISTORY = re.compile(
     r"\b20\d\d-\d\d-\d\d\b|\boriginally\b|\bhistorically\b"
@@ -97,7 +106,7 @@ CHAT_PROSE = [
     re.compile(r"\.\.\. ?(existing|rest)\b", re.I),
     re.compile(r"TODO: implement", re.I),
 ]
-EM_DASH_OR_CURLY = re.compile("[\u2014\u2018\u2019\u201c\u201d]")
+EM_DASH = re.compile(chr(0x2014))
 EMOJI = re.compile("[\U0001f000-\U0001faff\u2600-\u27bf\u2b50\u2b55]")
 BOLD = re.compile(r"(\*\*|__)[^*_\n]+\1")
 CAPS_TOKEN = re.compile(r"[A-Z][A-Z0-9]{2,}")
@@ -243,6 +252,27 @@ PLACEHOLDER = re.compile(
 )
 TEST_PATH = re.compile(r"(^|/)tests?(/|_)|_test\.|\.test\.|test_")
 SOURCE_DIRS = ("src/", "R/", "packages/")
+DEFINITION = {
+    ".py": re.compile(r"^(async\s+def|def|class)\s", re.M),
+    ".r": re.compile(r"^[A-Za-z._][\w.]*\s*(<-|=)\s*function\s*\(", re.M),
+    **dict.fromkeys(
+        (".js", ".ts", ".mjs", ".cjs", ".jsx", ".tsx"),
+        re.compile(
+            r"^\s*(export\s+)?(default\s+)?(async\s+)?(function|class)\b"
+            r"|^\s*(export\s+)?(const|let)\s+\w+\s*=\s*(async\s*)?"
+            r"(\([^)]*\)|\w+)\s*(:\s*[^=]+)?=>",
+            re.M,
+        ),
+    ),
+}
+TEST_NAME = re.compile(
+    r"^test_(\w+)\.py$|^(\w+)_test\.py$|^test[-_]([\w.-]+)\.[Rr]$"
+    r"|^([\w.-]+)\.(?:test|spec)\.[cm]?[jt]sx?$"
+)
+UNTESTED_EXEMPT_DIR = re.compile(r"(^|/)(docs|data|raw_data|notebooks)/")
+CONFIG_NAME = re.compile(r"\.config\.[cm]?[jt]s$|\.d\.ts$")
+# Files a language reserves for package setup and test fixtures.
+CONVENTION_FILES = {"__init__.py", "__main__.py", "conftest.py"}
 # The root documents each project layout names besides README.md.
 ROOT_DOCUMENTS = {
     "AGENTS.md",
@@ -411,6 +441,8 @@ def check_prose_line(report, path, n, text, in_code_comment, with_caps):
             report.add("contrast", path, n)
     if SALES.search(text):
         report.add("sales-vocabulary", path, n)
+    if DECISION_ATTRIBUTION.search(text):
+        report.add("decision-attribution", path, n)
     if in_code_comment and NARRATION.search(text):
         report.add("narration", path, n)
     if with_caps and caps_emphasis(text):
@@ -434,14 +466,9 @@ def caps_emphasis(text):
 
 
 def check_typography_line(report, path, n, line):
-    """Report an em dash, curly quote or emoji on the line."""
-    if EM_DASH_OR_CURLY.search(line):
-        report.add(
-            "typography",
-            path,
-            n,
-            "Em dash or curly quote; use a comma, period or straight quote.",
-        )
+    """Report an em dash or emoji on the line."""
+    if EM_DASH.search(line):
+        report.add("typography", path, n, "Em dash; use a comma or a period.")
     if EMOJI.search(line):
         report.add("typography", path, n, "Emoji; remove it.")
 
@@ -600,9 +627,11 @@ def check_readme_paths(report, repo_dir, path, lines):
 
 
 def check_config_file(report, path, text):
-    """Apply the typography rule to a configuration file."""
+    """Apply the typography and attribution rules to a configuration file."""
     for n, line in enumerate(text.splitlines(), 1):
         check_typography_line(report, path, n, line)
+        if DECISION_ATTRIBUTION.search(line):
+            report.add("decision-attribution", path, n)
 
 
 def check_notebook(report, repo_dir, path):
@@ -677,9 +706,78 @@ def load_exempt(standards_root, repo_name):
     return frozenset(pairs)
 
 
+def defines_code(path, text):
+    """Whether a code file defines a function or a class at its top level."""
+    suffix = PurePosixPath(path).suffix.lower()
+    pattern = DEFINITION.get(suffix)
+    return bool(pattern and pattern.search(text))
+
+
+def expected_test(path):
+    """Return the test file the layouts name for a source file."""
+    pure = PurePosixPath(path)
+    stem, suffix = pure.stem, pure.suffix
+    if suffix.lower() == ".py":
+        return f"tests/test_{stem}.py"
+    if suffix.lower() == ".r":
+        return f"tests/testthat/test-{stem}.R"
+    return f"tests/{stem}.test{suffix}"
+
+
+def test_stems(paths):
+    """Return the source stems the repository's test files are named for."""
+    stems = set()
+    for path in paths:
+        name = PurePosixPath(path).name
+        match = TEST_NAME.match(name)
+        if match and TEST_PATH.search(path):
+            stems.add(next(g for g in match.groups() if g))
+    return stems
+
+
+def is_test_covered(stem, stems):
+    """Whether a test file is named for the stem or for a part of it."""
+    return any(s == stem or s.startswith(stem + "_") for s in stems)
+
+
+def untested_code(repo_dir, paths):
+    """Return (path, expected test file) for each code file with no test."""
+    code = [
+        p
+        for p in paths
+        if PurePosixPath(p).suffix.lower() in DEFINITION
+        and not any(part.startswith(".") for part in PurePosixPath(p).parts)
+        and not UNTESTED_EXEMPT_DIR.search(p)
+        and not TEST_PATH.search(p)
+        and not CONFIG_NAME.search(PurePosixPath(p).name)
+    ]
+    stems = test_stems(paths)
+    if code and not stems:
+        return [("", "tests/")]
+    found = []
+    for path in code:
+        if PurePosixPath(path).name in CONVENTION_FILES:
+            continue
+        text = read_text(repo_dir, path)
+        if text is None or not defines_code(path, text):
+            continue
+        if not is_test_covered(PurePosixPath(path).stem, stems):
+            found.append((path, expected_test(path)))
+    return found
+
+
 def check_tree(report, repo_dir, allowlist):
     """Apply the tree rules to every tracked file."""
-    for path in tracked_files(repo_dir):
+    paths = tracked_files(repo_dir)
+    for path, test in untested_code(repo_dir, paths):
+        if path:
+            message = f"Add {test}, testing what this file defines."
+        else:
+            message = (
+                "The repository has code and no tests; add a tests folder."
+            )
+        report.add("untested-code", path or "tests/", 0, message)
+    for path in paths:
         check_path(report, path)
         suffix = PurePosixPath(path).suffix.lower()
         if suffix == ".ipynb":

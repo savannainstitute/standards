@@ -49,6 +49,7 @@ def decision(output):
     ("name", "content"),
     [
         ("a.py", "x = 1  # fine\n"),
+        ("a.R", f"x <- {CURLY}a{CURLY}\n"),
         ("a.py", "text = '**kept**'\n"),
         ("README.md", "The API_KEY is read when NOT_SET is absent.\n"),
         ("blob.bin", f"left {EM_DASH} right\n"),
@@ -68,7 +69,6 @@ def test_post_write_is_silent_on_text_typography_allows(
     ("name", "content"),
     [
         ("a.py", f"x = 1  # left {EM_DASH} right\n"),
-        ("a.R", f"x <- {CURLY}a{CURLY}\n"),
         ("README.md", "This is **bold** text.\n"),
         ("README.md", "This is IMPORTANT to read.\n"),
         ("a.py", "# This is IMPORTANT to read.\nx = 1\n"),

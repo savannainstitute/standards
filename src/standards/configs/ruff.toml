@@ -10,6 +10,8 @@ select = [
     "ARG", "ERA", "BLE", "S110", "S112", "PGH", "RUF100", "PT", "B011", "PLR0124",
 ]
 pydocstyle = { convention = "pep257" }
+# A single capital letter such as X for a matrix is the usual name in statistics code.
+pep8-naming = { extend-ignore-names = ["[A-Z]"] }
 
 [lint.per-file-ignores]
 "__init__.py" = ["D104"]

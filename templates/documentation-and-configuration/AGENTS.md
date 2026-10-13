@@ -121,6 +121,13 @@ list with every shape the check looks for is at
   expect(true).toBe(true)
   ```
 
+- `untested-code`: A code file that defines a function or a class has its own
+  test file, named as the layouts name it: `test_<name>.py`, `test-<name>.R` or
+  `<name>.test.ts`. A repository with code and no test file at all fails once.
+  Files that define nothing, such as scripts that only run steps, need no test
+  file of their own. To fix it: Add the test file the finding names, testing
+  what the code file defines.
+
 - `readme-path`: Every path named in backticks in a README or a docs/ file
   exists in the repo. To fix it: Fix the path or remove the sentence.
 
@@ -209,10 +216,24 @@ list with every shape the check looks for is at
   because the previous
   ```
 
-- `typography`: No em dashes, curly quotes or emoji anywhere; no bold in
-  Markdown; none of the words below written in capitals for emphasis in a
-  comment or Markdown. A capitalized identifier or acronym is fine. To fix it:
-  Use a comma, a period or a plain word.
+- `decision-attribution`: A file states what holds, not who decided it or when:
+  no person and date in parentheses, no decision credited to a person or a
+  date, no line saying what a person asked for or wants. To fix it: State the
+  decision itself. The pull request and git history record who made it and
+  when.
+
+  ```text
+  (Name, 2026-10-12)
+  approved by Name
+  decided on 2026-10-12
+  Name asked that
+  per Name's request
+  ```
+
+- `typography`: No em dashes or emoji anywhere; no bold in Markdown; none of
+  the words below written in capitals for emphasis in a comment or Markdown. A
+  capitalized identifier or acronym is fine. To fix it: Use a comma, a period
+  or a plain word.
 
   ```text
   NOT

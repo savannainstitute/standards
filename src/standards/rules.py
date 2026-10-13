@@ -82,6 +82,23 @@ RULES = (
         ("2023-04-01", "originally", "historically", "because the previous"),
     ),
     Rule(
+        "decision-attribution",
+        False,
+        "comments, docstrings, Markdown, configuration files, " + TEXT,
+        "A file states what holds, not who decided it or when: no person "
+        "and date in parentheses, no decision credited to a person or a "
+        "date, no line saying what a person asked for or wants.",
+        "State the decision itself. The pull request and git history "
+        "record who made it and when.",
+        (
+            "(Name, 2026-10-12)",
+            "approved by Name",
+            "decided on 2026-10-12",
+            "Name asked that",
+            "per Name's request",
+        ),
+    ),
+    Rule(
         "chat-residue",
         True,
         CODE,
@@ -101,7 +118,7 @@ RULES = (
         "typography",
         False,
         TREE,
-        "No em dashes, curly quotes or emoji anywhere; no bold in Markdown; "
+        "No em dashes or emoji anywhere; no bold in Markdown; "
         "none of the words below written in capitals for emphasis in a "
         "comment or Markdown. A capitalized identifier or acronym is fine.",
         "Use a comma, a period or a plain word.",
@@ -296,6 +313,18 @@ RULES = (
         "Report how many rows are dropped and why, in the comment and in "
         "the output.",
         ("dropna(", "fillna(", "na.omit(", "drop_na(", "filter(!is.na("),
+    ),
+    Rule(
+        "untested-code",
+        True,
+        CODE,
+        "A code file that defines a function or a class has its own test "
+        "file, named as the layouts name it: `test_<name>.py`, "
+        "`test-<name>.R` or `<name>.test.ts`. A repository with code and no "
+        "test file at all fails once. Files that define nothing, such as "
+        "scripts that only run steps, need no test file of their own.",
+        "Add the test file the finding names, testing what the code file "
+        "defines.",
     ),
     Rule(
         "readme-path",
