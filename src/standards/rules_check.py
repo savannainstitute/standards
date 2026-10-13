@@ -24,7 +24,7 @@ from pathlib import Path, PurePosixPath
 
 import yaml
 
-from standards import rules
+from standards import rules, shared_files
 
 CODE_SUFFIXES = {
     ".py",
@@ -244,7 +244,14 @@ PLACEHOLDER = re.compile(
 TEST_PATH = re.compile(r"(^|/)tests?(/|_)|_test\.|\.test\.|test_")
 SOURCE_DIRS = ("src/", "R/", "packages/")
 # The root documents each project layout names besides README.md.
-ROOT_DOCUMENTS = {"CHANGELOG.md", "NEWS.md", "LICENSE.md", "HOSTING.md"}
+ROOT_DOCUMENTS = {
+    "AGENTS.md",
+    "CLAUDE.md",
+    "CHANGELOG.md",
+    "NEWS.md",
+    "LICENSE.md",
+    "HOSTING.md",
+}
 REMOVED_TEST = re.compile(r"^\s*(def test_|test_that\(|(it|test)\()")
 ATTRIBUTION = re.compile(
     r"Co-authored-by:.*(claude|anthropic)|Generated (with|by) \[?Claude"
@@ -689,6 +696,8 @@ def check_tree(report, repo_dir, allowlist):
             check_markdown_file(report, repo_dir, path, text)
         else:
             check_config_file(report, path, text)
+    for path, message in shared_files.findings(repo_dir):
+        report.add("standards-copy", path, 0, message)
 
 
 def parse_diff(repo_dir, base, head):
@@ -738,6 +747,16 @@ DEPENDENCY_SHAPES = {
 }
 
 
+NPM_SECTIONS = (
+    "dependencies",
+    "devDependencies",
+    "peerDependencies",
+    "optionalDependencies",
+)
+DESCRIPTION_FIELD = re.compile(r"^([A-Za-z@/0-9.]+):")
+DESCRIPTION_SECTIONS = {"Depends", "Imports", "Suggests", "LinkingTo"}
+
+
 def is_manifest(path):
     """Whether the path is a dependency manifest the check reads."""
     name = PurePosixPath(path).name
@@ -759,22 +778,55 @@ def conda_dependencies(head_text):
     return names
 
 
+def npm_dependencies(head_text):
+    """Package names under the dependency sections of a package.json."""
+    try:
+        data = json.loads(head_text)
+    except json.JSONDecodeError:
+        return set()
+    names = set()
+    for section in NPM_SECTIONS:
+        names.update(data.get(section) or {})
+    return names
+
+
+def description_dependencies(head_text):
+    """Package names under the dependency fields of an R DESCRIPTION file."""
+    names = set()
+    in_dependency_field = False
+    for line in head_text.splitlines():
+        field = DESCRIPTION_FIELD.match(line)
+        if field:
+            in_dependency_field = field.group(1) in DESCRIPTION_SECTIONS
+            line = line[field.end() :]
+        if in_dependency_field:
+            names.update(re.findall(r"[A-Za-z][A-Za-z0-9.]+(?![^(]*\))", line))
+    return names
+
+
+DECLARED = {
+    "environment.yml": conda_dependencies,
+    "package.json": npm_dependencies,
+    "DESCRIPTION": description_dependencies,
+}
+
+
 def dependency_names(path, added, head_text):
     """Return (line, package) for each added line declaring a dependency."""
     name = PurePosixPath(path).name
     key = "requirements" if name.startswith("requirements") else name
     shape = DEPENDENCY_SHAPES[key]
-    conda = conda_dependencies(head_text) if key == "environment.yml" else None
+    declared = DECLARED[key](head_text) if key in DECLARED else None
     found = []
     for n, text in added:
         if key == "requirements" and text.lstrip().startswith(("#", "-")):
             continue
-        if conda is not None and text.rstrip().endswith(":"):
+        if key == "environment.yml" and text.rstrip().endswith(":"):
             continue
         match = shape.match(text)
         if not match:
             continue
-        if conda is not None and match.group(1) not in conda:
+        if declared is not None and match.group(1) not in declared:
             continue
         found.append((n, match.group(1)))
     return found

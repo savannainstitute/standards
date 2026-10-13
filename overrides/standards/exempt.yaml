@@ -10,3 +10,9 @@ exempt:
   - path: src/standards/rules_check.py
     rules: [machine-path, silenced-check]
     reason: the patterns those rules look for are defined on this file's lines
+  - path: .github/workflows/checks.yml
+    rules: [standards-copy]
+    reason: this repository holds the shared workflow under that name; self-checks.yml calls it
+  - path: .pre-commit-config.yaml
+    rules: [standards-copy]
+    reason: this repository runs its hooks from the working copy, so it pins no released version

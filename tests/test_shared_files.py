@@ -1,0 +1,58 @@
+"""Each shared copy is reported when it drifts, with the fix named."""
+
+from pathlib import Path
+
+import pytest
+
+from standards import shared_files
+
+ROOT = Path(__file__).parents[1]
+TEMPLATES = sorted(p for p in (ROOT / "templates").iterdir() if p.is_dir())
+
+
+def test_current_copies_have_no_findings(tmp_path):
+    shared_files.write_copies(tmp_path)
+    assert shared_files.findings(tmp_path) == []
+
+
+def test_an_old_pin_names_the_new_one(tmp_path):
+    """The planted rev is v0.0.1; the message names it and the current tag."""
+    shared_files.write_copies(tmp_path)
+    config = tmp_path / ".pre-commit-config.yaml"
+    current = shared_files.pinned_rev()
+    config.write_text(
+        config.read_text(encoding="utf-8").replace(current, "v0.0.1"),
+        encoding="utf-8",
+    )
+    ((path, message),) = shared_files.findings(tmp_path)
+    assert path == ".pre-commit-config.yaml"
+    assert f"Set rev to {current}" in message
+    assert message.endswith("it is v0.0.1.")
+
+
+def test_an_edited_caller_is_reported(tmp_path):
+    """A caller pointed at another branch of the workflow is one finding."""
+    shared_files.write_copies(tmp_path)
+    caller = tmp_path / ".github" / "workflows" / "checks.yml"
+    caller.write_text(
+        caller.read_text(encoding="utf-8").replace("@v1", "@my-branch"),
+        encoding="utf-8",
+    )
+    assert [path for path, _ in shared_files.findings(tmp_path)] == [
+        ".github/workflows/checks.yml"
+    ]
+
+
+def test_the_pin_is_the_package_version():
+    """The pinned tag is the version in pyproject.toml with a v in front."""
+    line = next(
+        row
+        for row in (ROOT / "pyproject.toml").read_text().splitlines()
+        if row.startswith("version = ")
+    )
+    assert shared_files.pinned_rev() == "v" + line.split('"')[1]
+
+
+@pytest.mark.parametrize("template", TEMPLATES, ids=lambda p: p.name)
+def test_templates_carry_current_copies(template):
+    assert shared_files.findings(template) == []

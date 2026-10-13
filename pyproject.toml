@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "savannainstitute-standards"
-version = "1.0.0"
+version = "1.1.0"
 description = "The Savanna Institute's shared code checks, linter settings and project templates"
 readme = "README.md"
 license = "MIT"
@@ -19,6 +19,7 @@ dependencies = [
 [project.scripts]
 rules-check = "standards.rules_check:main"
 render-rules = "standards.render_rules:main"
+render-agent = "standards.render_agent:main"
 standards-ruff = "standards.tools:main_ruff"
 standards-yamllint = "standards.tools:main_yamllint"
 standards-config = "standards.tools:main_config"
@@ -27,7 +28,7 @@ standards-config = "standards.tools:main_config"
 where = ["src"]
 
 [tool.setuptools.package-data]
-standards = ["configs/*"]
+standards = ["configs/*", "agent/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

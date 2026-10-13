@@ -5,6 +5,7 @@ Usage: render-rules [--check]
 
 import argparse
 import sys
+import textwrap
 from pathlib import Path
 
 from standards.rules import RULES
@@ -22,15 +23,23 @@ that file and run `render-rules`.
 """
 
 
+def wrap(paragraph):
+    """Return the paragraph wrapped to the header's width and a blank line."""
+    lines = textwrap.fill(
+        paragraph, width=79, break_long_words=False, break_on_hyphens=False
+    )
+    return lines + "\n\n"
+
+
 def render():
     """Return the Markdown text of the rule list."""
     parts = [HEADER]
     for rule in RULES:
         severity = "Blocks" if rule.blocks else "Warns"
         parts.append(f"## {rule.id}\n\n")
-        parts.append(f"{severity}. Looks at {rule.scope}.\n\n")
-        parts.append(f"{rule.rule}\n\n")
-        parts.append(f"To fix it: {rule.fix}\n\n")
+        parts.append(wrap(f"{severity}. Looks at {rule.scope}."))
+        parts.append(wrap(rule.rule))
+        parts.append(wrap(f"To fix it: {rule.fix}"))
         if rule.examples:
             parts.append("Shapes the check looks for:\n\n```text\n")
             parts.extend(f"{example}\n" for example in rule.examples)

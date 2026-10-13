@@ -34,3 +34,10 @@ repos:
         additional_dependencies: ["."]
         pass_filenames: false
         always_run: true
+      - id: render-agent
+        name: the agent files are current
+        entry: render-agent --check
+        language: python
+        additional_dependencies: ["."]
+        pass_filenames: false
+        always_run: true

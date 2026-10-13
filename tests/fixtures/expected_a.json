@@ -33,5 +33,13 @@
  ["typography", "commits", 1],
  ["attribution", "commits", 1],
  ["contrast", "pull-request-body", 1],
- ["sales-vocabulary", "pull-request-body", 3]
+ ["sales-vocabulary", "pull-request-body", 3],
+ ["standards-copy", ".github/workflows/checks.yml", 0],
+ ["standards-copy", ".pre-commit-config.yaml", 0],
+ ["standards-copy", "AGENTS.md", 0],
+ ["standards-copy", "CLAUDE.md", 0],
+ ["standards-copy", ".claude/settings.json", 0],
+ ["standards-copy", ".claude/hooks/rules_hook.py", 0],
+ ["standards-copy", ".claude/hooks/rules_hook.json", 0],
+ ["standards-copy", ".gemini/settings.json", 0]
 ]

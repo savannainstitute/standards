@@ -1,0 +1,10 @@
+{
+  // Provisional: every markdownlint default rule; 100 is the YAML line length in yamllint.yaml.
+  "config": {
+    "default": true,
+    "MD013": { "line_length": 100 }
+  },
+  // The organization's CLAUDE.md is one import line with no heading, so it is not linted.
+  "ignores": ["**/CLAUDE.md"],
+  "gitignore": true
+}

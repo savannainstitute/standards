@@ -1,0 +1,15 @@
+Package: packagename
+Title: One Line Saying What the Package Does
+Version: 0.1.0
+Authors@R: c(
+    person("First", "Last", email = "first.last@example.org",
+           role = c("aut", "cre")),
+    person("Savanna Institute", role = c("cph", "fnd"))
+  )
+Description: One paragraph saying what the package does and for whom.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Suggests:
+    testthat
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.1.1

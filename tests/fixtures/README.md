@@ -13,5 +13,6 @@ the planted violations as violations of these files.
 Scenario A plants one violation of every rule except fix-without-test, plus four lines that
 must not be reported: a dated file under the data folder, a four-line roxygen comment, three
 comment lines in a YAML file, and a silenced lint line that names its rule and reason. Scenario
-B changes one source file with no test and no explanation, which is the one case
-fix-without-test reports.
+A carries none of the files a repository copies from this one, so standards-copy reports each
+of the eight. Scenario B is given current copies of all eight by the test and changes one
+source file with no test and no explanation, which is the one case fix-without-test reports.
