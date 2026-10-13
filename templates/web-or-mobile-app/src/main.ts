@@ -1,17 +1,8 @@
-/** Page entry: fetch the heights file from public/ and show its summary. */
-import { parseHeights, summarize } from "./summary";
+/** Page entry: show the heights file's summary in the element with the id summary. */
+import { showSummary, textReader } from "./page";
 
 const output = document.querySelector<HTMLElement>("#summary");
 if (output === null) {
   throw new Error("index.html has no element with the id summary");
 }
-
-const response = await fetch("heights.csv");
-if (!response.ok) {
-  throw new Error(`heights.csv could not be read: status ${response.status}`);
-}
-
-const summary = summarize(parseHeights(await response.text()));
-output.textContent =
-  `${summary.count} trees, mean height ${summary.mean} cm, ` +
-  `shortest ${summary.min} cm, tallest ${summary.max} cm`;
+await showSummary(output, textReader(fetch));
