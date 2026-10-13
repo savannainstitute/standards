@@ -80,14 +80,14 @@ NARRATION = re.compile(
     r"|changed (this|it) to|this (now|fix) )\b",
     re.I,
 )
-PERSON = r"[A-Z][a-z]+"
+PERSON = r"[A-Z][a-z]+\b"
 ISO_DATE = r"\d{4}-\d{2}-\d{2}"
 DECIDED = r"(?i:decided|approved|agreed|confirmed|requested|chose|chosen)"
 DECISION_ATTRIBUTION = re.compile(
     rf"\(\s*{PERSON}(\s+{PERSON})?,\s*{ISO_DATE}\s*\)"
     rf"|\b{DECIDED}\b(\s+\w+){{0,3}}?\s+(by\s+{PERSON}|on\s+{ISO_DATE})"
-    rf"|\b{PERSON}\s+(asked|said|wants|prefers|decided|approved|requested)\b"
-    rf"|\bper\s+{PERSON}('s)?\b"
+    rf"|\b{PERSON}\s+(asked|wants|prefers|decided|approved)\b"
+    rf"|\bper\s+{PERSON}('s\b|\s+{ISO_DATE})"
 )
 DIVIDER = re.compile(r"^\s*(#|//)\s*[-=*_]{5,}")
 HISTORY = re.compile(
