@@ -6,6 +6,7 @@ pinned to. findings() names each one that is missing or out of date and says
 how to bring it back in line.
 """
 
+import subprocess
 from importlib import metadata, resources
 from pathlib import Path
 
@@ -74,6 +75,28 @@ def findings(repo_dir):
             "AGENTS.md and CLAUDE.md is yours to keep.",
         )
         for path in agent_files.compare(repo_dir)
+    )
+    named = {path for path, _ in found}
+    tracked = set(
+        subprocess.run(
+            ["git", "-C", str(repo_dir), "ls-files", "--cached"],
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        ).stdout.splitlines()
+    )
+    shared = [CALLER_PATH, PRE_COMMIT_PATH, *agent_files.COPIES.values()]
+    found.extend(
+        (
+            path,
+            f"{path} is in the folder but git does not track it; remove the "
+            "line in .gitignore that ignores it and commit it.",
+        )
+        for path in sorted(shared)
+        if path not in named
+        and path not in tracked
+        and (Path(repo_dir) / path).is_file()
     )
     return found
 
