@@ -38,20 +38,32 @@ def test_an_ignored_copy_is_named(tmp_path):
     assert all(".gitignore" in message for _, message in found)
 
 
-def test_an_old_pin_names_the_new_one(tmp_path):
-    """The planted rev is v0.0.1; the message names it and the current tag."""
+def pin_findings(tmp_path, rev):
+    """Write current copies with the planted rev and return the findings."""
     shared_files.write_copies(tmp_path)
     config = tmp_path / ".pre-commit-config.yaml"
-    current = shared_files.pinned_rev()
     config.write_text(
-        config.read_text(encoding="utf-8").replace(current, "v0.0.1"),
+        config.read_text(encoding="utf-8").replace(
+            shared_files.pinned_rev(), rev
+        ),
         encoding="utf-8",
     )
     track(tmp_path)
-    ((path, message),) = shared_files.findings(tmp_path)
+    return shared_files.findings(tmp_path)
+
+
+@pytest.mark.parametrize("rev", ["v0.0.1", "main", "v10.0.0"])
+def test_a_pin_outside_the_current_major_names_the_new_one(tmp_path, rev):
+    """v0 is older than the major version, and a branch is not a version."""
+    ((path, message),) = pin_findings(tmp_path, rev)
     assert path == ".pre-commit-config.yaml"
-    assert f"Set rev to {current}" in message
-    assert message.endswith("it is v0.0.1.")
+    assert f"Set rev to {shared_files.pinned_rev()}" in message
+    assert message.endswith(f"it is {rev}.")
+
+
+def test_an_older_pin_in_the_current_major_passes(tmp_path):
+    """The package is version 1, so v1.0.0 is accepted."""
+    assert pin_findings(tmp_path, "v1.0.0") == []
 
 
 def test_an_edited_caller_is_reported(tmp_path):

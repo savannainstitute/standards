@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+Changes collect here and are released together when a repository needs them.
+
+- `standards-copy` accepts a pre-commit pin to any release with the current major version, so
+  a new release no longer asks every repository to move its pin.
+
 ## 1.2.0
 
 - A new rule, `untested-code`, blocks: a code file that defines a function or a class needs its

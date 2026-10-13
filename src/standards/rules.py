@@ -350,10 +350,12 @@ RULES = (
         "standards-copy",
         True,
         "the files copied from the standards repository",
-        "The caller workflow, the files for coding agents and the version "
-        "the pre-commit hooks are pinned to match the standards "
-        "repository's copies. Text below the marker line in AGENTS.md and "
-        "CLAUDE.md belongs to the repository and is not compared.",
+        "The caller workflow and the files for coding agents match the "
+        "standards repository's copies, and the pre-commit hooks are pinned "
+        "to a release with the current major version, such as any v1 "
+        "release while the standards are at version 1. Text below the "
+        "marker line in AGENTS.md and CLAUDE.md belongs to the repository "
+        "and is not compared.",
         "Copy the file the finding names from the template for this kind "
         "of project in the standards repository, or set the rev it names.",
     ),

@@ -138,12 +138,13 @@ list with every shape the check looks for is at
   the repo. For a public test fixture, add the comment and the cited allowlist
   entry.
 
-- `standards-copy`: The caller workflow, the files for coding agents and the
-  version the pre-commit hooks are pinned to match the standards repository's
-  copies. Text below the marker line in AGENTS.md and CLAUDE.md belongs to the
-  repository and is not compared. To fix it: Copy the file the finding names
-  from the template for this kind of project in the standards repository, or
-  set the rev it names.
+- `standards-copy`: The caller workflow and the files for coding agents match
+  the standards repository's copies, and the pre-commit hooks are pinned to a
+  release with the current major version, such as any v1 release while the
+  standards are at version 1. Text below the marker line in AGENTS.md and
+  CLAUDE.md belongs to the repository and is not compared. To fix it: Copy the
+  file the finding names from the template for this kind of project in the
+  standards repository, or set the rev it names.
 
 - `stray-markdown`: A pull request that adds a Markdown file outside docs/,
   other than a README.md or the root AGENTS.md, CLAUDE.md, CHANGELOG.md,
