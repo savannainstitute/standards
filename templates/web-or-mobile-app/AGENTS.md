@@ -121,6 +121,13 @@ list with every shape the check looks for is at
   expect(true).toBe(true)
   ```
 
+- `untested-code`: A code file that defines a function or a class has its own
+  test file, named as the layouts name it: test_<name>.py, test-<name>.R or
+  <name>.test.ts. A repository with code and no test file at all fails once.
+  Files that define nothing, such as scripts that only run steps, need no test
+  file of their own. To fix it: Add the test file the finding names, testing
+  what the code file defines.
+
 - `readme-path`: Every path named in backticks in a README or a docs/ file
   exists in the repo. To fix it: Fix the path or remove the sentence.
 

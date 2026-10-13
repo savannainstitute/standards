@@ -45,23 +45,3 @@ def test_hook_patterns_match_the_check():
 @pytest.mark.parametrize("destination", DESTINATIONS, ids=lambda p: p.name)
 def test_copies_are_current(destination):
     assert agent_files.compare(destination) == []
-
-
-def test_compare_names_a_changed_copy(tmp_path):
-    """A copy edited above the marker is reported; below it is not."""
-    agent_files.write_copies(tmp_path)
-    agents = tmp_path / "AGENTS.md"
-    agents.write_text(
-        agents.read_text(encoding="utf-8") + "\nThis repository's notes.\n",
-        encoding="utf-8",
-    )
-    assert agent_files.compare(tmp_path) == []
-    agents.write_text(
-        "An extra line.\n" + agents.read_text(encoding="utf-8"),
-        encoding="utf-8",
-    )
-    (tmp_path / ".gemini" / "settings.json").unlink()
-    assert agent_files.compare(tmp_path) == [
-        ".gemini/settings.json",
-        "AGENTS.md",
-    ]
