@@ -17,6 +17,7 @@ from standards import rules_check
         "Decided on 2026-09-30: outputs go under data/derived.",
         "Monika asked that the map keep county lines.",
         "Kept as a list per Scott's request.",
+        "The ordinal-scale slider, per Scott 2026-08-07.",
     ],
 )
 def test_reported(line):
@@ -32,6 +33,12 @@ def test_reported(line):
         "## 1.1.0",
         "The model is fit per plot and per year.",
         "Each row is one tree measured in 2025.",
+        "Metashape said 80.6 percent and OpenDroneMap said 28.7 percent.",
+        "Sync said everything was synced.",
+        "500,000 items per Shared Drive.",
+        "Grantees connecting farmers to markets (per Inside Philanthropy).",
+        "Approved by HazelBase on the contract that the loader reads it.",
+        "One requested read owns one bounded buffer.",
     ],
 )
 def test_not_reported(line):
