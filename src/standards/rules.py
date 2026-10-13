@@ -83,7 +83,7 @@ RULES = (
     ),
     Rule(
         "decision-attribution",
-        False,
+        True,
         "comments, docstrings, Markdown, configuration files, " + TEXT,
         "A file states what holds, not who decided it or when: no person "
         "and date in parentheses, no decision credited to a person or a "

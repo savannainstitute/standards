@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+Changes collect here and are released together when a repository needs them.
+
+- `decision-attribution` blocks the merge. It no longer reads "said", and reads "per" only
+  before a possessive or a date, after a measurement on every repository in the organization.
+
 ## 1.2.0
 
 - A new rule, `untested-code`, blocks: a code file that defines a function or a class needs its
