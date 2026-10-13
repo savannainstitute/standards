@@ -100,9 +100,9 @@ stop("not implemented")
 
 Warns. Looks at every tracked file.
 
-No em dashes, curly quotes or emoji anywhere; no bold in Markdown; none of the
-words below written in capitals for emphasis in a comment or Markdown. A
-capitalized identifier or acronym is fine.
+No em dashes or emoji anywhere; no bold in Markdown; none of the words below
+written in capitals for emphasis in a comment or Markdown. A capitalized
+identifier or acronym is fine.
 
 To fix it: Use a comma, a period or a plain word.
 

@@ -101,7 +101,7 @@ RULES = (
         "typography",
         False,
         TREE,
-        "No em dashes, curly quotes or emoji anywhere; no bold in Markdown; "
+        "No em dashes or emoji anywhere; no bold in Markdown; "
         "none of the words below written in capitals for emphasis in a "
         "comment or Markdown. A capitalized identifier or acronym is fine.",
         "Use a comma, a period or a plain word.",

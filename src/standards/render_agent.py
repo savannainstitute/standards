@@ -84,7 +84,7 @@ def render_agents():
 def render_patterns():
     """Return the JSON text of the patterns the hook reads."""
     data = {
-        "characters": rules_check.EM_DASH_OR_CURLY.pattern,
+        "characters": rules_check.EM_DASH.pattern,
         "emoji": rules_check.EMOJI.pattern,
         "bold": rules_check.BOLD.pattern,
         "caps_token": rules_check.CAPS_TOKEN.pattern,

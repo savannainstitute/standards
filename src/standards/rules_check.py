@@ -97,8 +97,8 @@ CHAT_PROSE = [
     re.compile(r"\.\.\. ?(existing|rest)\b", re.I),
     re.compile(r"TODO: implement", re.I),
 ]
-EM_DASH_OR_CURLY = re.compile("[\u2014\u2018\u2019\u201c\u201d]")
-EMOJI = re.compile("[\U0001f000-\U0001faff\u2600-\u27bf\u2b50\u2b55]")
+EM_DASH = re.compile(chr(0x2014))
+EMOJI =re.compile("[\U0001f000-\U0001faff\u2600-\u27bf\u2b50\u2b55]")
 BOLD = re.compile(r"(\*\*|__)[^*_\n]+\1")
 CAPS_TOKEN = re.compile(r"[A-Z][A-Z0-9]{2,}")
 EMPHASIS_WORDS = {
@@ -455,14 +455,9 @@ def caps_emphasis(text):
 
 
 def check_typography_line(report, path, n, line):
-    """Report an em dash, curly quote or emoji on the line."""
-    if EM_DASH_OR_CURLY.search(line):
-        report.add(
-            "typography",
-            path,
-            n,
-            "Em dash or curly quote; use a comma, period or straight quote.",
-        )
+    """Report an em dash or emoji on the line."""
+    if EM_DASH.search(line):
+        report.add("typography", path, n, "Em dash; use a comma or a period.")
     if EMOJI.search(line):
         report.add("typography", path, n, "Emoji; remove it.")
 
