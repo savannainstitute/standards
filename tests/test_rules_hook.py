@@ -54,46 +54,49 @@ def decision(output):
         ("blob.bin", f"left {EM_DASH} right\n"),
     ],
 )
-def test_pre_write_allows(tmp_path, name, content):
-    payload = write_payload(tmp_path / name, content)
-    code, output = run_hook("pre-write", payload)
+def test_post_write_is_silent_on_text_typography_allows(
+    tmp_path, name, content
+):
+    target = tmp_path / name
+    target.write_text(content, encoding="utf-8")
+    code, output = run_hook("post-write", write_payload(target, content))
     assert code == 0
     assert output is None
 
 
 @pytest.mark.parametrize(
-    ("name", "content", "word"),
+    ("name", "content"),
     [
-        ("a.py", f"x = 1  # left {EM_DASH} right\n", "dash"),
-        ("a.R", f"x <- {CURLY}a{CURLY}\n", "quote"),
-        ("README.md", "This is **bold** text.\n", "Bold"),
-        ("README.md", "This is IMPORTANT to read.\n", "capitals"),
-        ("a.py", "# This is IMPORTANT to read.\nx = 1\n", "capitals"),
-        ("a.yaml", f"key: {EMOJI}\n", "Emoji"),
+        ("a.py", f"x = 1  # left {EM_DASH} right\n"),
+        ("a.R", f"x <- {CURLY}a{CURLY}\n"),
+        ("README.md", "This is **bold** text.\n"),
+        ("README.md", "This is IMPORTANT to read.\n"),
+        ("a.py", "# This is IMPORTANT to read.\nx = 1\n"),
+        ("a.yaml", f"key: {EMOJI}\n"),
     ],
 )
-def test_pre_write_denies(tmp_path, name, content, word):
-    payload = write_payload(tmp_path / name, content)
-    code, output = run_hook("pre-write", payload)
+def test_post_write_reports_typography_and_never_refuses(
+    tmp_path, name, content
+):
+    """Each planted character or word is on line 1; the write is allowed."""
+    target = tmp_path / name
+    target.write_text(content, encoding="utf-8")
+    code, output = run_hook("post-write", write_payload(target, content))
     assert code == 0
-    assert decision(output) == "deny"
-    reason = output["hookSpecificOutput"]["permissionDecisionReason"]
-    assert "typography" in reason
-    assert word in reason
+    assert "permissionDecision" not in output["hookSpecificOutput"]
+    context = output["hookSpecificOutput"]["additionalContext"]
+    assert context.splitlines()[1:] == ["line 1: typography"]
 
 
-def test_pre_write_reads_an_edit(tmp_path):
-    payload = {
-        "tool_name": "Edit",
-        "tool_input": {
-            "file_path": str(tmp_path / "a.py"),
-            "old_string": "x = 1",
-            "new_string": f"x = 2  # two {EM_DASH} now",
-        },
-    }
-    code, output = run_hook("pre-write", payload)
-    assert code == 0
-    assert decision(output) == "deny"
+def test_there_is_no_mode_that_refuses_a_write():
+    result = subprocess.run(
+        [sys.executable, str(HOOK), "pre-write"],
+        input="{}",
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "usage" in result.stderr
 
 
 PLANTED = "\n".join(

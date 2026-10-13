@@ -33,7 +33,7 @@ TEXT = "commit messages and the pull request text"
 RULES = (
     Rule(
         "contrast",
-        True,
+        False,
         PROSE + ", " + TEXT,
         "No contrast constructions used for effect.",
         "State the point directly; drop the half of the sentence that names "
@@ -47,7 +47,7 @@ RULES = (
     ),
     Rule(
         "narration",
-        True,
+        False,
         "comments, " + TEXT,
         "A comment states a constraint or an invariant; it does not narrate "
         "the change or the conversation.",
@@ -63,7 +63,7 @@ RULES = (
     ),
     Rule(
         "banner",
-        True,
+        False,
         CODE,
         "No comment block of three or more consecutive comment lines, and no "
         "divider line of dashes, equals signs or asterisks. Configuration "
@@ -99,7 +99,7 @@ RULES = (
     ),
     Rule(
         "typography",
-        True,
+        False,
         TREE,
         "No em dashes, curly quotes or emoji anywhere; no bold in Markdown; "
         "none of the words below written in capitals for emphasis in a "
@@ -126,7 +126,7 @@ RULES = (
     ),
     Rule(
         "sales-vocabulary",
-        True,
+        False,
         PROSE + ", " + TEXT,
         "No sales vocabulary.",
         "Say what the code does.",

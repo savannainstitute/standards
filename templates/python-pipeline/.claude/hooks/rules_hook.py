@@ -1,14 +1,13 @@
 """Claude Code hook: catch the organization's style rules while editing.
 
-Usage: rules_hook.py pre-write | post-write | pre-shell
+Usage: rules_hook.py post-write | pre-shell
 
-Claude Code passes the tool call as JSON on standard input. pre-write refuses
-a Write or Edit whose new text breaks the typography rule. post-write reads
+Claude Code passes the tool call as JSON on standard input. post-write reads
 the file just written and tells the agent which lines the pull request check
-will report. pre-shell refuses a recursive delete that reaches outside the
-project. The patterns come from rules_hook.json beside this file, which the
-organization's standards repository renders from the same list its check
-uses. This hook is a convenience; the pull request check is what blocks.
+will report for the writing rules; it never refuses a write. pre-shell
+refuses a recursive delete that reaches outside the project. The patterns
+come from rules_hook.json beside this file, which the organization's
+standards repository renders from the same list its check uses.
 """
 
 import json
@@ -100,27 +99,18 @@ def has_caps_emphasis(text, patterns):
     return False
 
 
-def typography_findings(path, text, patterns):
-    """Return one message per line of text that breaks the typography rule."""
-    kind = file_kind(path, patterns)
-    if kind is None:
-        return []
-    found = []
+def typography_lines(path, text, kind, patterns):
+    """Return the numbers of the lines the typography rule reports."""
+    found = set()
     for n, line in enumerate(text.splitlines(), 1):
-        if re.search(patterns["characters"], line):
-            found.append(
-                f"line {n}: Em dash or curly quote; use a comma, a period "
-                "or a straight quote."
-            )
-        if re.search(patterns["emoji"], line):
-            found.append(f"line {n}: Emoji; remove it.")
+        if re.search(patterns["characters"], line) or re.search(
+            patterns["emoji"], line
+        ):
+            found.add(n)
     for n, prose in prose_lines(path, text, kind, patterns):
-        if kind == "markdown" and re.search(patterns["bold"], prose):
-            found.append(f"line {n}: Bold in Markdown; use plain text.")
-        if has_caps_emphasis(prose, patterns):
-            found.append(
-                f"line {n}: A word in capitals for emphasis; use a plain word."
-            )
+        bold = kind == "markdown" and re.search(patterns["bold"], prose)
+        if bold or has_caps_emphasis(prose, patterns):
+            found.add(n)
     return found
 
 
@@ -152,9 +142,11 @@ def banner_lines(path, text, patterns):
 def review_findings(path, text, patterns):
     """Return (line, rule id) pairs the pull request check will report."""
     kind = file_kind(path, patterns)
-    if kind not in ("code", "markdown"):
+    if kind is None:
         return []
-    found = set()
+    found = {
+        (n, "typography") for n in typography_lines(path, text, kind, patterns)
+    }
     for n, prose in prose_lines(path, text, kind, patterns):
         if any(re.search(p, prose, re.I) for p in patterns["contrast"]):
             found.add((n, "contrast"))
@@ -227,20 +219,6 @@ def deny(reason):
     print(json.dumps(response))
 
 
-def pre_write(call, patterns):
-    """Refuse a Write or Edit whose new text breaks the typography rule."""
-    tool_input = call["tool_input"]
-    key = "content" if "content" in tool_input else "new_string"
-    found = typography_findings(
-        tool_input["file_path"], tool_input[key], patterns
-    )
-    if found:
-        deny(
-            "The organization's typography rule would block this on the "
-            "pull request. " + " ".join(found)
-        )
-
-
 def post_write(call, patterns):
     """Tell the agent which lines of the written file the check reports."""
     path = call["tool_input"]["file_path"]
@@ -283,20 +261,14 @@ def pre_shell(call):
 def main(argv=None):
     """Read the tool call from standard input and run the named mode."""
     argv = sys.argv[1:] if argv is None else argv
-    if len(argv) != 1 or argv[0] not in (
-        "pre-write",
-        "post-write",
-        "pre-shell",
-    ):
-        raise SystemExit("usage: rules_hook.py pre-write|post-write|pre-shell")
+    if len(argv) != 1 or argv[0] not in ("post-write", "pre-shell"):
+        raise SystemExit("usage: rules_hook.py post-write|pre-shell")
     raw = sys.stdin.read()
     if not raw.strip():
         return 0
     call = json.loads(raw)
     if argv[0] == "pre-shell":
         pre_shell(call)
-    elif argv[0] == "pre-write":
-        pre_write(call, load_patterns())
     else:
         post_write(call, load_patterns())
     return 0

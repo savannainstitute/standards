@@ -10,8 +10,8 @@ that file and run `render-rules`.
 
 ## contrast
 
-Blocks. Looks at comments, docstrings and Markdown, commit messages and the
-pull request text.
+Warns. Looks at comments, docstrings and Markdown, commit messages and the pull
+request text.
 
 No contrast constructions used for effect.
 
@@ -29,7 +29,7 @@ this is X, not Y
 
 ## narration
 
-Blocks. Looks at comments, commit messages and the pull request text.
+Warns. Looks at comments, commit messages and the pull request text.
 
 A comment states a constraint or an invariant; it does not narrate the change
 or the conversation.
@@ -49,7 +49,7 @@ per your feedback
 
 ## banner
 
-Blocks. Looks at code files.
+Warns. Looks at code files.
 
 No comment block of three or more consecutive comment lines, and no divider
 line of dashes, equals signs or asterisks. Configuration files, roxygen
@@ -98,7 +98,7 @@ stop("not implemented")
 
 ## typography
 
-Blocks. Looks at every tracked file.
+Warns. Looks at every tracked file.
 
 No em dashes, curly quotes or emoji anywhere; no bold in Markdown; none of the
 words below written in capitals for emphasis in a comment or Markdown. A
@@ -129,8 +129,8 @@ EVERY
 
 ## sales-vocabulary
 
-Blocks. Looks at comments, docstrings and Markdown, commit messages and the
-pull request text.
+Warns. Looks at comments, docstrings and Markdown, commit messages and the pull
+request text.
 
 No sales vocabulary.
 

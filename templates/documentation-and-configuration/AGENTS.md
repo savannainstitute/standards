@@ -27,34 +27,6 @@ list with every shape the check looks for is at
 
 ## Rules that block the merge
 
-- `contrast`: No contrast constructions used for effect. To fix it: State the
-  point directly; drop the half of the sentence that names what it is not.
-
-  ```text
-  not X, but Y
-  isn't X, it's Y
-  it's X, never Y
-  this is X, not Y
-  ```
-
-- `narration`: A comment states a constraint or an invariant; it does not
-  narrate the change or the conversation. To fix it: Delete the comment, or
-  rewrite it to say what the code must hold true.
-
-  ```text
-  now we handle
-  updated to fix
-  as requested
-  changed this to
-  per your feedback
-  ```
-
-- `banner`: No comment block of three or more consecutive comment lines, and no
-  divider line of dashes, equals signs or asterisks. Configuration files,
-  roxygen comments and block comments in the slash languages are exempt. To fix
-  it: Keep one line that states the constraint; move anything longer to the
-  docstring or docs/.
-
 - `chat-residue`: No chat left in source: Markdown fences, phrases from a
   conversation, placeholder comments standing in for code, or a function body
   that only raises NotImplementedError. To fix it: Finish the code or remove
@@ -66,39 +38,6 @@ list with every shape the check looks for is at
   ... existing code
   TODO: implement
   stop("not implemented")
-  ```
-
-- `typography`: No em dashes, curly quotes or emoji anywhere; no bold in
-  Markdown; none of the words below written in capitals for emphasis in a
-  comment or Markdown. A capitalized identifier or acronym is fine. To fix it:
-  Use a comma, a period or a plain word.
-
-  ```text
-  NOT
-  NEVER
-  ALWAYS
-  MUST
-  SHOULD
-  DO
-  DONT
-  IMPORTANT
-  CRITICAL
-  WARNING
-  NOTE
-  REQUIRED
-  ONLY
-  ALL
-  ANY
-  EVERY
-  ```
-
-- `sales-vocabulary`: No sales vocabulary. To fix it: Say what the code does.
-
-  ```text
-  robust
-  comprehensive
-  seamless
-  production-ready
   ```
 
 - `scratch-file`: No scratch or planning files committed: a Markdown or text
@@ -231,6 +170,34 @@ list with every shape the check looks for is at
 
 ## Rules that warn
 
+- `contrast`: No contrast constructions used for effect. To fix it: State the
+  point directly; drop the half of the sentence that names what it is not.
+
+  ```text
+  not X, but Y
+  isn't X, it's Y
+  it's X, never Y
+  this is X, not Y
+  ```
+
+- `narration`: A comment states a constraint or an invariant; it does not
+  narrate the change or the conversation. To fix it: Delete the comment, or
+  rewrite it to say what the code must hold true.
+
+  ```text
+  now we handle
+  updated to fix
+  as requested
+  changed this to
+  per your feedback
+  ```
+
+- `banner`: No comment block of three or more consecutive comment lines, and no
+  divider line of dashes, equals signs or asterisks. Configuration files,
+  roxygen comments and block comments in the slash languages are exempt. To fix
+  it: Keep one line that states the constraint; move anything longer to the
+  docstring or docs/.
+
 - `docstring-history`: A docstring or comment states purpose, not history: no
   dates and no account of what the code did before. To fix it: Git history is
   the record; remove the history from the docstring.
@@ -240,6 +207,39 @@ list with every shape the check looks for is at
   originally
   historically
   because the previous
+  ```
+
+- `typography`: No em dashes, curly quotes or emoji anywhere; no bold in
+  Markdown; none of the words below written in capitals for emphasis in a
+  comment or Markdown. A capitalized identifier or acronym is fine. To fix it:
+  Use a comma, a period or a plain word.
+
+  ```text
+  NOT
+  NEVER
+  ALWAYS
+  MUST
+  SHOULD
+  DO
+  DONT
+  IMPORTANT
+  CRITICAL
+  WARNING
+  NOTE
+  REQUIRED
+  ONLY
+  ALL
+  ANY
+  EVERY
+  ```
+
+- `sales-vocabulary`: No sales vocabulary. To fix it: Say what the code does.
+
+  ```text
+  robust
+  comprehensive
+  seamless
+  production-ready
   ```
 
 - `silent-default`: A required input has no silent default; the shapes below

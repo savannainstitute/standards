@@ -24,6 +24,10 @@ and skips the ones for a language the repository does not use:
 7. The rules in `docs/RULES.md`. Each rule says what it looks for, whether it blocks the merge
    or only warns, and how to fix a finding.
 
+The rules about writing style (dashes and capitals, long comment blocks, a few phrasings and
+words) only warn. What blocks is what nobody would defend: a secret, a machine file, chat left
+in source, a silenced check with no reason, a removed test with no explanation.
+
 A failing check prints one line per finding: the file, the line, the rule, and what to change.
 Fix the finding and push again; the check runs again on its own.
 
@@ -73,11 +77,10 @@ Claude Code, Codex or Gemini:
 - `.gemini/settings.json`: makes Gemini read `AGENTS.md`.
 - `.claude/settings.json`: turns off the attribution lines Claude Code adds to commits and pull
   requests, and runs the hook below.
-- `.claude/hooks/rules_hook.py` and `.claude/hooks/rules_hook.json`: a hook that stops Claude Code
-  from writing an em dash, a curly quote, an emoji, bold or a word in capitals for emphasis, tells
-  it which lines the check will report after it writes a file, and stops it from deleting a
-  folder outside the project. The hook needs Python on your computer and does nothing without
-  it.
+- `.claude/hooks/rules_hook.py` and `.claude/hooks/rules_hook.json`: a hook that tells Claude
+  Code, after it writes a file, which lines the check will report for the writing rules, and
+  stops it from deleting a folder outside the project. It never refuses a write. The hook
+  needs Python on your computer.
 
 These files are a convenience and can be switched off on your own computer. The check on the
 pull request is what blocks. A repository may add its own notes to `AGENTS.md` and `CLAUDE.md`
