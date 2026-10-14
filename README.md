@@ -18,7 +18,8 @@ and skips the ones for a language the repository does not use:
    and `src/standards/r/lintr_settings.R`. A package's help pages must match its code.
 4. JavaScript and TypeScript style and types, with ESLint, Prettier and the TypeScript compiler,
    using the settings in `src/standards/configs/`.
-5. YAML and Markdown files are well formed.
+5. YAML and Markdown files are well formed, and every Dockerfile passes hadolint with the
+   settings in `src/standards/configs/hadolint.yaml`.
 6. Tests. Python tests run with pytest, R tests with testthat and JavaScript tests with vitest.
    Every file of code that defines a function needs its own test file. The tests must run at
    least 75% of the lines of Python and JavaScript code. A repository that was below that

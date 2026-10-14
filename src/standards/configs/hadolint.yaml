@@ -1,0 +1,3 @@
+# Every hadolint rule at its own default severity, and any finding fails, which is hadolint's
+# default failure threshold. A repository's exception goes under overrides/<repo>/ here.
+failure-threshold: info

@@ -8,6 +8,7 @@ Changes collect here and are released together when a repository needs them.
   before a possessive or a date, after a measurement on every repository in the organization.
 - `standards-copy` accepts a pre-commit pin to any release with the current major version, so
   a new release no longer asks every repository to move its pin.
+- Every Dockerfile in a repository is linted with hadolint 2.15.1, and any finding fails.
 
 ## 1.2.0
 
