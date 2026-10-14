@@ -7,8 +7,9 @@ file Claude Code just wrote and tells it which lines the pull request check
 will report for the writing rules and decision-attribution; it never
 refuses a write. pre-shell
 refuses a recursive delete that reaches outside the project. stop runs when
-Claude Code, Codex or Gemini ends its turn: it reads every file changed in
-the working tree and, when the check would report a line, sends the agent
+Claude Code, Codex or Gemini ends its turn: it runs pre-commit on every file
+changed in the working tree when pre-commit is installed, reads those files
+and, when pre-commit fails or the check would report a line, sends the agent
 back once with the list. The patterns come from rules_hook.json beside this
 file, which the organization's standards repository renders from the same
 list its check uses.
@@ -18,6 +19,7 @@ import json
 import os
 import posixpath
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -302,6 +304,29 @@ def changed_files(working_dir):
     return root, sorted(paths)
 
 
+def pre_commit_report(root, paths):
+    """Run pre-commit on the changed files and return its report if it fails.
+
+    Runs only when pre-commit is installed and the repository configures it;
+    otherwise, and when it passes, the report is empty.
+    """
+    program = shutil.which("pre-commit")
+    configured = (Path(root) / ".pre-commit-config.yaml").is_file()
+    if not paths or program is None or not configured:
+        return ""
+    result = subprocess.run(
+        [program, "run", "--color", "never", "--files", *paths],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    if result.returncode == 0:
+        return ""
+    return (result.stdout + result.stderr).strip()
+
+
 def stop(call, tool, patterns):
     """Send the agent back once when a changed file has a finding."""
     if call.get("stop_hook_active"):
@@ -310,6 +335,7 @@ def stop(call, tool, patterns):
     if changed is None:
         return
     root, paths = changed
+    report = pre_commit_report(root, paths)
     lines = []
     for path in paths:
         text = (Path(root) / path).read_text(
@@ -319,15 +345,24 @@ def stop(call, tool, patterns):
             f"{path} line {n}: {rule}"
             for n, rule in review_findings(path, text, patterns)
         )
-    if not lines:
+    parts = []
+    if lines:
+        lines.insert(
+            0,
+            "Before you finish, the pull request check will report these "
+            "lines in the files changed here. Fix each as AGENTS.md says, or "
+            "say in your reply why a line stays:",
+        )
+        parts.append("\n".join(lines))
+    if report:
+        parts.append(
+            "pre-commit failed on the files changed here, or fixed some of "
+            "them itself; read what it changed and fix the rest. Its "
+            "report:\n" + report
+        )
+    if not parts:
         return
-    lines.insert(
-        0,
-        "Before you finish, the pull request check will report these lines "
-        "in the files changed here. Fix each as AGENTS.md says, or say in "
-        "your reply why a line stays:",
-    )
-    reason = "\n".join(lines)
+    reason = "\n\n".join(parts)
     print(json.dumps({"decision": CONTINUE_DECISION[tool], "reason": reason}))
 
 

@@ -85,16 +85,17 @@ Claude Code, Codex or Gemini:
 - `.claude/settings.json`: turns off the attribution lines Claude Code adds to commits and pull
   requests, and runs the hook below.
 - `.claude/hooks/rules_hook.py` and `.claude/hooks/rules_hook.json`: the hook. When the agent
-  ends its turn, it reads every file changed in the working tree and, if the check would
-  report a line for the writing rules or for a decision credited to a person or a date, sends
-  the agent back once with the list to fix. It
-  also tells Claude Code, after each file it writes, which lines the check will report, and
-  stops it from deleting a folder outside the project. It never refuses a write. The hook
-  needs Python on your computer, as `python`.
+  ends its turn, the hook runs pre-commit on every file changed in the working tree, if
+  pre-commit is installed, and reads those files for the writing rules and for a decision
+  credited to a person or a date. If pre-commit fails or a line would be reported, it sends
+  the agent back once with the list to fix. It also tells Claude Code, after each file it
+  writes, which lines the check will report, and stops it from deleting a folder outside the
+  project. It never refuses a write. The hook needs Python on your computer, as `python`.
 
-The hook covers only the writing rules and `decision-attribution`, which it can read with
-Python alone. Ruff, Air, lintr, markdownlint and the tests run in pre-commit and in the check
-on the pull request.
+Without pre-commit, the hook covers only the writing rules and `decision-attribution`, which
+it can read with Python alone. With pre-commit installed, the agent also gets Ruff's fixes and
+findings and the rule check before it finishes. Air, lintr, markdownlint and the tests run
+only in the check on the pull request.
 
 Nothing needs to be installed for the hooks: each tool finds its file in the repository. Each
 asks once before running hooks it has not seen. Claude Code asks you to trust the folder the

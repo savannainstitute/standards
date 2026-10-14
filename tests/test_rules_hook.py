@@ -19,9 +19,11 @@ CURLY = chr(0x201C)
 EMOJI = chr(0x1F600)
 
 
-def run_hook(mode, payload):
+def run_hook(mode, payload, path_first=None):
     """Run the hook as Claude Code does and return (exit code, output)."""
     env = {k: v for k, v in os.environ.items() if k != "CLAUDE_PROJECT_DIR"}
+    if path_first:
+        env["PATH"] = str(path_first) + os.pathsep + env["PATH"]
     result = subprocess.run(
         [sys.executable, str(HOOK), *mode.split()],
         input=json.dumps(payload),
@@ -181,6 +183,7 @@ def git(repo, *args):
 
 def planted_repo(tmp_path):
     """Return a repository with one clean commit and two edited files."""
+    tmp_path.mkdir(exist_ok=True)
     git(tmp_path, "init", "-q")
     (tmp_path / "clean.py").write_text("x = 1\n", encoding="utf-8")
     (tmp_path / "old.py").write_text("y = 2\n", encoding="utf-8")
@@ -251,6 +254,70 @@ def test_stop_is_silent_outside_a_repository(tmp_path):
     code, output = run_hook("stop claude", stop_payload(tmp_path))
     assert code == 0
     assert output is None
+
+
+FAKE_REPORT = "ruff check....Failed"
+
+
+def fake_pre_commit(folder, exit_code):
+    """Plant a pre-commit that records its arguments and prints a report."""
+    folder.mkdir()
+    record = folder / "args.txt"
+    (folder / "pre-commit").write_text(
+        f'#!/bin/sh\necho "$@" > "{record.as_posix()}"\n'
+        f"echo {FAKE_REPORT}\nexit {exit_code}\n"
+    )
+    (folder / "pre-commit").chmod(0o755)
+    (folder / "pre-commit.cmd").write_text(
+        f'@echo %* > "{record}"\r\n'
+        f"@echo {FAKE_REPORT}\r\n@exit /b {exit_code}\r\n"
+    )
+    return record
+
+
+def test_stop_runs_pre_commit_on_the_changed_files(tmp_path):
+    """The planted repo changed old.py and added new.md and the config."""
+    repo = planted_repo(tmp_path / "repo")
+    (repo / ".pre-commit-config.yaml").write_text("repos: []\n")
+    record = fake_pre_commit(tmp_path / "bin", exit_code=1)
+    code, output = run_hook(
+        "stop claude", stop_payload(repo), tmp_path / "bin"
+    )
+    assert code == 0
+    assert record.read_text().split() == [
+        "run",
+        "--color",
+        "never",
+        "--files",
+        ".pre-commit-config.yaml",
+        "new.md",
+        "old.py",
+    ]
+    assert FAKE_REPORT in output["reason"]
+    assert "old.py line 1: sales-vocabulary" in output["reason"]
+
+
+def test_stop_is_silent_when_pre_commit_passes(tmp_path):
+    repo = planted_repo(tmp_path / "repo")
+    (repo / "old.py").write_text("y = 3\n")
+    (repo / "new.md").unlink()
+    (repo / ".pre-commit-config.yaml").write_text("repos: []\n")
+    record = fake_pre_commit(tmp_path / "bin", exit_code=0)
+    code, output = run_hook("stop codex", stop_payload(repo), tmp_path / "bin")
+    assert code == 0
+    assert record.is_file()
+    assert output is None
+
+
+def test_stop_skips_pre_commit_without_its_config(tmp_path):
+    repo = planted_repo(tmp_path / "repo")
+    record = fake_pre_commit(tmp_path / "bin", exit_code=1)
+    code, output = run_hook(
+        "stop gemini", stop_payload(repo), tmp_path / "bin"
+    )
+    assert code == 0
+    assert not record.exists()
+    assert FAKE_REPORT not in output["reason"]
 
 
 def test_stop_needs_the_tool_named():
