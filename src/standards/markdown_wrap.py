@@ -26,7 +26,7 @@ def words(text):
 
 
 def fill(text, first="", rest=""):
-    """Return text filled to WIDTH, line 1 after first and the rest after rest."""
+    """Return text filled to WIDTH, with a prefix for line 1 and the rest."""
     lines = []
     line = first
     for word in words(text):

@@ -17,7 +17,7 @@ def test_fill_breaks_before_the_word_that_passes_the_width():
 
 
 def test_list_items_hang_two_spaces():
-    """ "- " and 24 words of 3 letters with 23 spaces make 97; one more wraps."""
+    """The 2-column prefix, 24 words of 3 and 23 spaces make 97; one wraps."""
     text = " ".join(["abc"] * 25)
     first, second = markdown_wrap.fill(text, "- ", "  ").split("\n")
     assert len(first) == 97
