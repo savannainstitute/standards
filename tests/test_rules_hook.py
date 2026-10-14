@@ -88,6 +88,40 @@ def test_post_write_reports_typography_and_never_refuses(
     assert context.splitlines()[1:] == ["line 1: typography"]
 
 
+@pytest.mark.parametrize(
+    ("name", "content"),
+    [
+        ("a.py", "x = 1\nlimit = 5  # approved by Maria\n"),
+        ("README.md", "Intro.\nThe floor is 75% (Maria, 2026-01-05).\n"),
+        ("a.yaml", "a: 1\nfloor: 75  # agreed on 2026-01-05\n"),
+    ],
+)
+def test_post_write_reports_decision_attribution(tmp_path, name, content):
+    """Each planted credit to a person or a date is on line 2."""
+    target = tmp_path / name
+    target.write_text(content, encoding="utf-8")
+    code, output = run_hook("post-write", write_payload(target, content))
+    assert code == 0
+    context = output["hookSpecificOutput"]["additionalContext"]
+    assert context.splitlines()[1:] == ["line 2: decision-attribution"]
+
+
+@pytest.mark.parametrize(
+    ("name", "content"),
+    [
+        ("a.py", 'note = "approved by Maria"\n'),
+        ("a.py", "x = 1  # see Maria's notes\n"),
+    ],
+)
+def test_post_write_leaves_attribution_outside_prose(tmp_path, name, content):
+    """A string in code is not prose, and a name alone credits no decision."""
+    target = tmp_path / name
+    target.write_text(content, encoding="utf-8")
+    code, output = run_hook("post-write", write_payload(target, content))
+    assert code == 0
+    assert output is None
+
+
 def test_there_is_no_mode_that_refuses_a_write():
     result = subprocess.run(
         [sys.executable, str(HOOK), "pre-write"],
