@@ -17,7 +17,7 @@ from standards import agent_files
 HOOKS_URL = "https://github.com/savannainstitute/standards"
 CALLER_PATH = ".github/workflows/checks.yml"
 PRE_COMMIT_PATH = ".pre-commit-config.yaml"
-# The first commit with the markdown-format hook; pre-commit autoupdate moves it.
+# First commit with the markdown-format hook; pre-commit autoupdate moves it.
 TEMPLATE_REV = "049d382a82f39372474d45310f682ab6170c0f0c"
 
 
