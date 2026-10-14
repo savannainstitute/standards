@@ -17,8 +17,8 @@ from standards import agent_files
 HOOKS_URL = "https://github.com/savannainstitute/standards"
 CALLER_PATH = ".github/workflows/checks.yml"
 PRE_COMMIT_PATH = ".pre-commit-config.yaml"
-# Tip of main when the tags were dropped; pre-commit autoupdate moves it.
-TEMPLATE_REV = "2c3d619e980638b7dc33126e47a9476abb16af22"
+# The first commit with the markdown-format hook; pre-commit autoupdate moves it.
+TEMPLATE_REV = "049d382a82f39372474d45310f682ab6170c0f0c"
 
 
 def caller_text():
