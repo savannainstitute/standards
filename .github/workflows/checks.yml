@@ -35,9 +35,12 @@ jobs:
           python-version: "3.13"
 
       - name: Install the standards package, which pins every tool
+        id: standards
         run: python -m pip install --quiet ./standards
 
+      # Every check below runs after another fails, so one push reports every finding.
       - name: Install gitleaks
+        id: gitleaks
         run: |
           curl -sSL -o gitleaks.tar.gz \
             "$RELEASES/v$VERSION/gitleaks_${VERSION}_linux_x64.tar.gz"
@@ -49,10 +52,12 @@ jobs:
           SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
 
       - name: Secrets anywhere in the history
+        if: ${{ !cancelled() && steps.gitleaks.outcome == 'success' }}
         working-directory: repo
         run: ../gitleaks git --config "$(standards-config gitleaks.toml)" --redact --no-banner .
 
       - name: Dockerfiles
+        if: ${{ !cancelled() && steps.standards.outcome == 'success' }}
         working-directory: repo
         env:
           RELEASES: https://github.com/hadolint/hadolint/releases/download
@@ -69,6 +74,7 @@ jobs:
           fi
 
       - name: Python lint and format
+        if: ${{ !cancelled() && steps.standards.outcome == 'success' }}
         working-directory: repo
         run: |
           if git ls-files -- '*.py' | grep -q .; then
@@ -77,10 +83,12 @@ jobs:
           fi
 
       - name: YAML
+        if: ${{ !cancelled() && steps.standards.outcome == 'success' }}
         working-directory: repo
         run: yamllint -c "$(standards-config yamllint.yaml)" .
 
       - name: Rules in the rule list
+        if: ${{ !cancelled() && steps.standards.outcome == 'success' }}
         working-directory: repo
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
@@ -92,16 +100,21 @@ jobs:
             --repo "$GITHUB_REPOSITORY" --standards-root ../standards
 
       - uses: actions/setup-node@v7
+        id: node
+        if: ${{ !cancelled() }}
         with:
           node-version: "24"
 
       # Tools are called by full path under this folder, never through a script in the repository.
       - name: Install the Node tools at the versions the standards pin
+        id: node-tools
+        if: ${{ !cancelled() && steps.node.outcome == 'success' }}
         run: |
           npm ci --prefix standards/src/standards/configs
           echo "STANDARDS_NODE=$GITHUB_WORKSPACE/standards/src/standards/configs" >> "$GITHUB_ENV"
 
       - name: Markdown
+        if: ${{ !cancelled() && steps.node-tools.outcome == 'success' }}
         working-directory: repo
         run: |
           if git ls-files -- '.markdownlint*' '*/.markdownlint*' | grep .; then
@@ -114,6 +127,8 @@ jobs:
           fi
 
       - name: Install the repository's packages
+        id: packages
+        if: ${{ !cancelled() && steps.node.outcome == 'success' }}
         working-directory: repo
         run: |
           if [ -f package.json ]; then
@@ -121,6 +136,9 @@ jobs:
           fi
 
       - name: JavaScript and TypeScript lint
+        if: >-
+          ${{ !cancelled() && steps.node-tools.outcome == 'success'
+          && steps.packages.outcome == 'success' }}
         working-directory: repo
         run: |
           if [ -f package.json ]; then
@@ -129,6 +147,9 @@ jobs:
           fi
 
       - name: JavaScript and TypeScript format
+        if: >-
+          ${{ !cancelled() && steps.node-tools.outcome == 'success'
+          && steps.packages.outcome == 'success' }}
         working-directory: repo
         run: |
           if [ -f package.json ]; then
@@ -139,6 +160,9 @@ jobs:
           fi
 
       - name: Types
+        if: >-
+          ${{ !cancelled() && steps.node-tools.outcome == 'success'
+          && steps.packages.outcome == 'success' }}
         working-directory: repo
         run: |
           if [ -f package.json ]; then
@@ -146,6 +170,10 @@ jobs:
           fi
 
       - name: JavaScript and TypeScript tests
+        id: js-tests
+        if: >-
+          ${{ !cancelled() && steps.node-tools.outcome == 'success'
+          && steps.packages.outcome == 'success' }}
         working-directory: repo
         env:
           STANDARDS_NO_NEEDS: "true"
@@ -160,6 +188,7 @@ jobs:
 
       - name: Python tests
         id: python-tests
+        if: ${{ !cancelled() && steps.standards.outcome == 'success' }}
         working-directory: repo
         run: |
           if [ -f environment.yml ] && [ -d tests ]; then
@@ -181,7 +210,11 @@ jobs:
             fi
           fi
 
+      # Coverage needs both test steps to have finished, or a report would be missing.
       - name: Test coverage against the floor
+        if: >-
+          ${{ !cancelled() && steps.python-tests.outcome == 'success'
+          && steps.js-tests.outcome == 'success' }}
         working-directory: repo
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
@@ -194,6 +227,7 @@ jobs:
 
       - name: Find the R files and how the repository declares its R packages
         id: r
+        if: ${{ !cancelled() }}
         working-directory: repo
         env:
           VERSION_FIELD: 's/^(Config\/roxygen2\/version|RoxygenNote): *//p'
@@ -219,7 +253,8 @@ jobs:
           fi
 
       - name: Set up R, at the version renv.lock records when there is one
-        if: steps.r.outputs.found == 'true'
+        id: r-setup
+        if: ${{ !cancelled() && steps.r.outputs.found == 'true' }}
         uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ steps.r.outputs.kind == 'renv' && 'renv' || 'release' }}
@@ -227,7 +262,10 @@ jobs:
           use-public-rspm: true
 
       - name: Install what DESCRIPTION declares, the package itself and the check's tools
-        if: steps.r.outputs.kind == 'package'
+        id: r-deps
+        if: >-
+          ${{ !cancelled() && steps.r-setup.outcome == 'success'
+          && steps.r.outputs.kind == 'package' }}
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
           working-directory: repo
@@ -239,14 +277,20 @@ jobs:
             local::.
 
       - name: Install the packages renv.lock records
-        if: steps.r.outputs.kind == 'renv'
+        id: r-renv
+        if: >-
+          ${{ !cancelled() && steps.r-setup.outcome == 'success'
+          && steps.r.outputs.kind == 'renv' }}
         uses: r-lib/actions/setup-renv@v2
         with:
           working-directory: repo
 
       # Outside repo/ so the repository's renv library stays exactly as renv.lock has it.
       - name: Install the check's tools in a library of their own
-        if: steps.r.outputs.kind == 'renv' || steps.r.outputs.kind == 'plain'
+        id: r-tools
+        if: >-
+          ${{ !cancelled() && steps.r-setup.outcome == 'success'
+          && (steps.r.outputs.kind == 'renv' || steps.r.outputs.kind == 'plain') }}
         working-directory: ${{ runner.temp }}
         env:
           STANDARDS_R_LIB: ${{ runner.temp }}/standards-r-lib
@@ -255,14 +299,15 @@ jobs:
           Rscript -e 'install.packages(c("lintr", "testthat"), lib = Sys.getenv("STANDARDS_R_LIB"))'
 
       - name: Install Air
-        if: steps.r.outputs.found == 'true'
+        id: air
+        if: ${{ !cancelled() && steps.r.outputs.found == 'true' }}
         uses: posit-dev/setup-air@v1
         with:
           version: "0.12.0"
 
       # Air takes no settings path, so the central file replaces any the repository carries.
       - name: R format
-        if: steps.r.outputs.found == 'true'
+        if: ${{ !cancelled() && steps.air.outcome == 'success' }}
         working-directory: repo
         run: |
           find . \( -name air.toml -o -name .air.toml \) -not -path './.git/*' -delete
@@ -273,15 +318,22 @@ jobs:
           git checkout --quiet -- .
           exit "$status"
 
+      # Skipped installs are fine here; only one that ran and failed leaves R without its packages.
       - name: R lint
-        if: steps.r.outputs.found == 'true'
+        if: >-
+          ${{ !cancelled() && steps.r.outcome == 'success' && steps.r-setup.outcome == 'success'
+          && steps.r-deps.outcome != 'failure' && steps.r-renv.outcome != 'failure'
+          && steps.r-tools.outcome != 'failure' }}
         working-directory: repo
         env:
           STANDARDS_R_LIB: ${{ runner.temp }}/standards-r-lib
         run: Rscript ../standards/src/standards/r/run_lintr.R .
 
       - name: R tests
-        if: steps.r.outputs.found == 'true'
+        if: >-
+          ${{ !cancelled() && steps.r.outcome == 'success' && steps.r-setup.outcome == 'success'
+          && steps.r-deps.outcome != 'failure' && steps.r-renv.outcome != 'failure'
+          && steps.r-tools.outcome != 'failure' }}
         working-directory: repo
         env:
           STANDARDS_NO_NEEDS: "true"
@@ -292,14 +344,14 @@ jobs:
           fi
 
       - name: R help pages match the code
-        if: steps.r.outputs.kind == 'package'
+        if: ${{ !cancelled() && steps.r-deps.outcome == 'success' }}
         working-directory: repo
         run: Rscript ../standards/src/standards/r/roxygen_drift.R .
 
   # Building a conda environment takes minutes, so these tests report beside the lint job.
   conda-tests:
     needs: lint
-    if: needs.lint.outputs.conda == 'true'
+    if: ${{ !cancelled() && needs.lint.outputs.conda == 'true' }}
     runs-on: ${{ (github.event.repository.private && inputs.runner) || 'ubuntu-latest' }}
     defaults:
       run:

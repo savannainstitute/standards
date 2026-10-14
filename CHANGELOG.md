@@ -9,6 +9,8 @@ Changes collect here and are released together when a repository needs them.
 - `standards-copy` no longer reads the pre-commit pin: a repository's `.pre-commit-config.yaml`
   runs the standards hooks at any release it chooses, and `pre-commit autoupdate` moves it. The
   rule runs on the pull request only, since pre-commit runs the pinned release and its copies.
+- Every part of the check runs when an earlier part fails, so one push reports every finding.
+  A part is skipped only when the install it needs failed.
 - Every Dockerfile in a repository is linted with hadolint 2.15.1, and any finding fails.
 - The agent hook runs when Claude Code, Codex or Gemini ends its turn, and sends the agent
   back once to fix the writing-rule lines in the files it changed. A new shared file,

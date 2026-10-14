@@ -34,7 +34,8 @@ words) only warn. What blocks is what nobody would defend: a secret, a machine f
 in source, a silenced check with no reason, a removed test with no explanation.
 
 A failing check prints one line per finding: the file, the line, the rule, and what to change.
-Fix the finding and push again; the check runs again on its own.
+Every part of the check runs even when an earlier part fails, so one push shows every finding.
+Fix them and push again; the check runs again on its own.
 
 ## Running the checks on your own computer
 
