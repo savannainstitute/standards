@@ -23,3 +23,11 @@
   entry: standards-yamllint
   language: python
   types: [yaml]
+
+# The same version and settings as configs/package.json and configs/prettierrc.yaml.
+- id: markdown-format
+  name: markdown format
+  entry: prettier --write --no-config --no-editorconfig --print-width 100 --prose-wrap always
+  language: node
+  additional_dependencies: ["prettier@3.9.10"]
+  types: [markdown]
