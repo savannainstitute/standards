@@ -321,7 +321,7 @@ jobs:
       # Skipped installs are fine here; only one that ran and failed leaves R without its packages.
       - name: R lint
         if: >-
-          ${{ !cancelled() && steps.r-setup.outcome == 'success'
+          ${{ !cancelled() && steps.r.outcome == 'success' && steps.r-setup.outcome == 'success'
           && steps.r-deps.outcome != 'failure' && steps.r-renv.outcome != 'failure'
           && steps.r-tools.outcome != 'failure' }}
         working-directory: repo
@@ -331,7 +331,7 @@ jobs:
 
       - name: R tests
         if: >-
-          ${{ !cancelled() && steps.r-setup.outcome == 'success'
+          ${{ !cancelled() && steps.r.outcome == 'success' && steps.r-setup.outcome == 'success'
           && steps.r-deps.outcome != 'failure' && steps.r-renv.outcome != 'failure'
           && steps.r-tools.outcome != 'failure' }}
         working-directory: repo
