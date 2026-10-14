@@ -31,6 +31,7 @@
   "sales": "\\b(robust|comprehensive|seamless(ly)?|production-ready)\\b",
   "narration": "\\b(now we|updated to|as requested|per (the|your) (request|feedback)|changed (this|it) to|this (now|fix) )\\b",
   "divider": "^\\s*(#|//)\\s*[-=*_]{5,}",
+  "decision_attribution": "\\(\\s*[A-Z][a-z]+\\b(\\s+[A-Z][a-z]+\\b)?,\\s*\\d{4}-\\d{2}-\\d{2}\\s*\\)|\\b(?i:decided|approved|agreed|confirmed|requested|chose|chosen)\\b(\\s+\\w+){0,3}?\\s+(by\\s+[A-Z][a-z]+\\b|on\\s+\\d{4}-\\d{2}-\\d{2})|\\b[A-Z][a-z]+\\b\\s+(asked|wants|prefers|decided|approved)\\b|\\bper\\s+[A-Z][a-z]+\\b('s\\b|\\s+\\d{4}-\\d{2}-\\d{2})",
   "code_suffixes": [
     ".bash",
     ".cjs",

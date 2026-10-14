@@ -86,13 +86,15 @@ Claude Code, Codex or Gemini:
   requests, and runs the hook below.
 - `.claude/hooks/rules_hook.py` and `.claude/hooks/rules_hook.json`: the hook. When the agent
   ends its turn, it reads every file changed in the working tree and, if the check would
-  report a line for the writing rules, sends the agent back once with the list to fix. It
+  report a line for the writing rules or for a decision credited to a person or a date, sends
+  the agent back once with the list to fix. It
   also tells Claude Code, after each file it writes, which lines the check will report, and
   stops it from deleting a folder outside the project. It never refuses a write. The hook
   needs Python on your computer, as `python`.
 
-The hook covers only the writing rules, which it can read with Python alone. Ruff, Air,
-lintr, markdownlint and the tests run in pre-commit and in the check on the pull request.
+The hook covers only the writing rules and `decision-attribution`, which it can read with
+Python alone. Ruff, Air, lintr, markdownlint and the tests run in pre-commit and in the check
+on the pull request.
 
 Nothing needs to be installed for the hooks: each tool finds its file in the repository. Each
 asks once before running hooks it has not seen. Claude Code asks you to trust the folder the

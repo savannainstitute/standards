@@ -4,7 +4,8 @@ Usage: rules_hook.py post-write | pre-shell | stop claude|codex|gemini
 
 The agent passes the event as JSON on standard input. post-write reads the
 file Claude Code just wrote and tells it which lines the pull request check
-will report for the writing rules; it never refuses a write. pre-shell
+will report for the writing rules and decision-attribution; it never
+refuses a write. pre-shell
 refuses a recursive delete that reaches outside the project. stop runs when
 Claude Code, Codex or Gemini ends its turn: it reads every file changed in
 the working tree and, when the check would report a line, sends the agent
@@ -160,6 +161,14 @@ def review_findings(path, text, patterns):
             found.add((n, "sales-vocabulary"))
         if kind == "code" and re.search(patterns["narration"], prose, re.I):
             found.add((n, "narration"))
+        if re.search(patterns["decision_attribution"], prose):
+            found.add((n, "decision-attribution"))
+    if kind == "config":
+        found.update(
+            (n, "decision-attribution")
+            for n, line in enumerate(text.splitlines(), 1)
+            if re.search(patterns["decision_attribution"], line)
+        )
     if kind == "code":
         found.update((n, "banner") for n in banner_lines(path, text, patterns))
     return sorted(found)

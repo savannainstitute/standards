@@ -12,6 +12,8 @@ Changes collect here and are released together when a repository needs them.
 - The agent hook runs when Claude Code, Codex or Gemini ends its turn, and sends the agent
   back once to fix the writing-rule lines in the files it changed. A new shared file,
   `.codex/hooks.json`, and new entries in `.claude/settings.json` and `.gemini/settings.json`.
+- The agent hook also reports `decision-attribution` lines, after each write and at the end of
+  a turn.
 
 ## 1.2.0
 

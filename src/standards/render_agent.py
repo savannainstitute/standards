@@ -95,6 +95,7 @@ def render_patterns():
         "sales": rules_check.SALES.pattern,
         "narration": rules_check.NARRATION.pattern,
         "divider": rules_check.DIVIDER.pattern,
+        "decision_attribution": rules_check.DECISION_ATTRIBUTION.pattern,
         "code_suffixes": sorted(rules_check.CODE_SUFFIXES),
         "markdown_suffixes": sorted(rules_check.MARKDOWN_SUFFIXES),
         "config_suffixes": sorted(rules_check.CONFIG_SUFFIXES),
