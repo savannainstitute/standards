@@ -4,7 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "savannainstitute-standards"
-version = "1.2.0"
+# pip requires a version; repositories run the check from main, so it never changes.
+version = "0"
 description = "The Savanna Institute's shared code checks, linter settings and project templates"
 readme = "README.md"
 license = "MIT"
