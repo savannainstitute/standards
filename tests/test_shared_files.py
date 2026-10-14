@@ -44,7 +44,7 @@ def pin_findings(tmp_path, rev):
     config = tmp_path / ".pre-commit-config.yaml"
     config.write_text(
         config.read_text(encoding="utf-8").replace(
-            shared_files.pinned_rev(), rev
+            shared_files.TEMPLATE_REV, rev
         ),
         encoding="utf-8",
     )
@@ -72,7 +72,7 @@ def test_an_edited_caller_is_reported(tmp_path):
     shared_files.write_copies(tmp_path)
     caller = tmp_path / ".github" / "workflows" / "checks.yml"
     caller.write_text(
-        caller.read_text(encoding="utf-8").replace("@v1", "@my-branch"),
+        caller.read_text(encoding="utf-8").replace("@main", "@my-branch"),
         encoding="utf-8",
     )
     track(tmp_path)
@@ -81,22 +81,12 @@ def test_an_edited_caller_is_reported(tmp_path):
     ]
 
 
-def test_the_pin_is_the_package_version():
-    """The pinned tag is the version in pyproject.toml with a v in front."""
-    line = next(
-        row
-        for row in (ROOT / "pyproject.toml").read_text().splitlines()
-        if row.startswith("version = ")
-    )
-    assert shared_files.pinned_rev() == "v" + line.split('"')[1]
-
-
 @pytest.mark.parametrize("template", TEMPLATES, ids=lambda p: p.name)
 def test_templates_carry_current_copies(template):
     assert shared_files.findings(template) == []
 
 
 @pytest.mark.parametrize("template", TEMPLATES, ids=lambda p: p.name)
-def test_templates_pin_the_current_release(template):
-    """A new repository starts on the release this package is."""
-    assert shared_files.pre_commit_rev(template) == shared_files.pinned_rev()
+def test_templates_pin_the_same_commit(template):
+    """Every template starts a new repository on the same commit."""
+    assert shared_files.pre_commit_rev(template) == shared_files.TEMPLATE_REV

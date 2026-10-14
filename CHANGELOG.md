@@ -1,8 +1,12 @@
 # Changelog
 
-## Unreleased
+## After 1.2.0
 
-Changes collect here and are released together when a repository needs them.
+There are no more releases or tags. Each entry reaches every repository's next pull request
+when it merges.
+
+- The caller workflow runs the check from `@main`, not `@v1`, and the templates pin the
+  standards hooks to a commit on main, not a tag. `pre-commit autoupdate` moves the pin.
 
 - `decision-attribution` blocks the merge. It no longer reads "said", and reads "per" only
   before a possessive or a date, after a measurement on every repository in the organization.
