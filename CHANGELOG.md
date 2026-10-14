@@ -15,6 +15,8 @@ Changes collect here and are released together when a repository needs them.
   `.codex/hooks.json`, and new entries in `.claude/settings.json` and `.gemini/settings.json`.
 - The agent hook also reports `decision-attribution` lines, after each write and at the end of
   a turn.
+- At the end of a turn the agent hook runs pre-commit on the changed files when pre-commit is
+  installed, and sends the agent back with its report when it fails.
 
 ## 1.2.0
 
