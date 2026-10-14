@@ -20,7 +20,7 @@ from standards.rules import RULES
 # The Python line length in configs/ruff.toml, so one width serves the repo.
 WIDTH = 79
 RULES_URL = (
-    "https://github.com/savannainstitute/standards/blob/v1/docs/RULES.md"
+    "https://github.com/savannainstitute/standards/blob/main/docs/RULES.md"
 )
 
 HEADER = f"""# Rules for coding agents

@@ -11,8 +11,8 @@ when it merges.
 - `decision-attribution` blocks the merge. It no longer reads "said", and reads "per" only
   before a possessive or a date, after a measurement on every repository in the organization.
 - `standards-copy` no longer reads the pre-commit pin: a repository's `.pre-commit-config.yaml`
-  runs the standards hooks at any release it chooses, and `pre-commit autoupdate` moves it. The
-  rule runs on the pull request only, since pre-commit runs the pinned release and its copies.
+  runs the standards hooks at any commit it chooses, and `pre-commit autoupdate` moves it. The
+  rule runs on the pull request only, since pre-commit runs the pinned commit and its copies.
 - Every part of the check runs when an earlier part fails, so one push reports every finding.
   A part is skipped only when the install it needs failed.
 - Every Dockerfile in a repository is linted with hadolint 2.15.1, and any finding fails.

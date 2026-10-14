@@ -4,7 +4,7 @@ Every pull request in this repository runs the organization's check, which
 appears as `checks / lint` and blocks the merge when it fails. The rules
 below are that check's list, with the same ids its findings print. The full
 list with every shape the check looks for is at
-<https://github.com/savannainstitute/standards/blob/v1/docs/RULES.md>.
+<https://github.com/savannainstitute/standards/blob/main/docs/RULES.md>.
 
 ## Before you commit
 
