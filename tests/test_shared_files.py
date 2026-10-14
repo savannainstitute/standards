@@ -52,18 +52,19 @@ def pin_findings(tmp_path, rev):
     return shared_files.findings(tmp_path)
 
 
-@pytest.mark.parametrize("rev", ["v0.0.1", "main", "v10.0.0"])
-def test_a_pin_outside_the_current_major_names_the_new_one(tmp_path, rev):
-    """v0 is older than the major version, and a branch is not a version."""
-    ((path, message),) = pin_findings(tmp_path, rev)
+@pytest.mark.parametrize("rev", ["v0.0.1", "v1.0.0", "main", "v10.0.0"])
+def test_any_pin_passes(tmp_path, rev):
+    """The rev is the repository's to choose; only the hooks must be there."""
+    assert pin_findings(tmp_path, rev) == []
+
+
+def test_a_config_without_the_standards_hooks_is_reported(tmp_path):
+    shared_files.write_copies(tmp_path)
+    (tmp_path / ".pre-commit-config.yaml").write_text("repos: []\n")
+    track(tmp_path)
+    ((path, message),) = shared_files.findings(tmp_path)
     assert path == ".pre-commit-config.yaml"
-    assert f"Set rev to {shared_files.pinned_rev()}" in message
-    assert message.endswith(f"it is {rev}.")
-
-
-def test_an_older_pin_in_the_current_major_passes(tmp_path):
-    """The package is version 1, so v1.0.0 is accepted."""
-    assert pin_findings(tmp_path, "v1.0.0") == []
+    assert shared_files.HOOKS_URL in message
 
 
 def test_an_edited_caller_is_reported(tmp_path):
@@ -93,3 +94,9 @@ def test_the_pin_is_the_package_version():
 @pytest.mark.parametrize("template", TEMPLATES, ids=lambda p: p.name)
 def test_templates_carry_current_copies(template):
     assert shared_files.findings(template) == []
+
+
+@pytest.mark.parametrize("template", TEMPLATES, ids=lambda p: p.name)
+def test_templates_pin_the_current_release(template):
+    """A new repository starts on the release this package is."""
+    assert shared_files.pre_commit_rev(template) == shared_files.pinned_rev()

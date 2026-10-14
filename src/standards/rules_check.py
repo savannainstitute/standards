@@ -794,8 +794,6 @@ def check_tree(report, repo_dir, allowlist):
             check_markdown_file(report, repo_dir, path, text)
         else:
             check_config_file(report, path, text)
-    for path, message in shared_files.findings(repo_dir):
-        report.add("standards-copy", path, 0, message)
 
 
 def parse_diff(repo_dir, base, head):
@@ -1016,6 +1014,10 @@ def run(
     report = Report(load_exempt(standards_root, repo_name))
     allowlist = load_allowlist(standards_root, repo_name)
     check_tree(report, repo_dir, allowlist)
+    # Only the hosted check passes a standards checkout; pre-commit may lag.
+    if standards_root:
+        for path, message in shared_files.findings(repo_dir):
+            report.add("standards-copy", path, 0, message)
     if base:
         check_diff(report, repo_dir, base, head, pr_body or "")
         check_commits(report, repo_dir, base, head)

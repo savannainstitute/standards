@@ -351,13 +351,14 @@ RULES = (
         True,
         "the files copied from the standards repository",
         "The caller workflow and the files for coding agents match the "
-        "standards repository's copies, and the pre-commit hooks are pinned "
-        "to a release with the current major version, such as any v1 "
-        "release while the standards are at version 1. Text below the "
-        "marker line in AGENTS.md and CLAUDE.md belongs to the repository "
-        "and is not compared.",
+        "standards repository's copies, and .pre-commit-config.yaml runs "
+        "the standards hooks at any release. Text below the marker line in "
+        "AGENTS.md and CLAUDE.md belongs to the repository and is not "
+        "compared. Checked on the pull request only, since pre-commit runs "
+        "the release the repository pins.",
         "Copy the file the finding names from the template for this kind "
-        "of project in the standards repository, or set the rev it names.",
+        "of project in the standards repository. To run newer hooks on "
+        "your computer, run pre-commit autoupdate.",
     ),
     Rule(
         "stray-markdown",

@@ -96,6 +96,15 @@ def test_planted_findings(tmp_path, name):
     )
 
 
+def test_pre_commit_leaves_standards_copy_to_the_hosted_check(tmp_path):
+    """With no standards checkout, as in pre-commit, A loses only those."""
+    scenario, expected = load("a")
+    actual = findings_for(tmp_path, scenario, None)
+    without_copies = {row for row in expected if row[0] != "standards-copy"}
+    assert {row for row in actual if row[0] == "standards-copy"} == set()
+    assert without_copies <= actual
+
+
 def test_every_rule_is_planted():
     """Every rule in the list appears in one of the two expected files."""
     planted = set()

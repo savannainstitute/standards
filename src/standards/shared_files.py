@@ -1,12 +1,11 @@
 """Compare a repository's copies of the shared files with this package's.
 
-A repository carries three things copied from the standards repository: the
-caller workflow, the agent files, and the version its pre-commit hooks are
-pinned to. findings() names each one that is missing or out of date and says
-how to bring it back in line.
+A repository carries the caller workflow and the agent files copied from the
+standards repository, and a pre-commit configuration that runs the standards
+hooks at whichever release the repository chooses. findings() names each one
+that is missing or out of date and says how to bring it back in line.
 """
 
-import re
 import subprocess
 from importlib import metadata, resources
 from pathlib import Path
@@ -18,7 +17,6 @@ from standards import agent_files
 HOOKS_URL = "https://github.com/savannainstitute/standards"
 CALLER_PATH = ".github/workflows/checks.yml"
 PRE_COMMIT_PATH = ".pre-commit-config.yaml"
-RELEASE_TAG = re.compile(r"^v(\d+)\.\d+\.\d+$")
 
 
 def caller_text():
@@ -28,15 +26,8 @@ def caller_text():
 
 
 def pinned_rev():
-    """Return the tag a repository's pre-commit hooks are pinned to."""
+    """Return this package's release tag, which the templates pin."""
     return "v" + metadata.version("savannainstitute-standards")
-
-
-def in_current_major(rev):
-    """Whether rev is a release tag with the same major version as this one."""
-    match = RELEASE_TAG.match(rev or "")
-    current = RELEASE_TAG.match(pinned_rev())
-    return bool(match) and match.group(1) == current.group(1)
 
 
 def pre_commit_rev(repo_dir):
@@ -67,13 +58,12 @@ def findings(repo_dir):
                 "project in the standards repository, unchanged.",
             )
         )
-    rev = pre_commit_rev(repo_dir)
-    if not in_current_major(rev):
+    if pre_commit_rev(repo_dir) is None:
         found.append(
             (
                 PRE_COMMIT_PATH,
-                f"Set rev to {pinned_rev()} for {HOOKS_URL} in "
-                f"{PRE_COMMIT_PATH}; it is {rev or 'not there'}.",
+                f"Copy {PRE_COMMIT_PATH} from the template for this kind of "
+                f"project; it runs the hooks from {HOOKS_URL}.",
             )
         )
     found.extend(
