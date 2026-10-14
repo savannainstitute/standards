@@ -18,6 +18,9 @@ if (!dir.exists(tests_dir)) {
   stop(repo_dir, " has no testthat folder under tests", call. = FALSE)
 }
 
+# Tests that skip on CRAN, such as shinytest2's browser tests, run in the check.
+Sys.setenv(NOT_CRAN = "true")
+
 # Attached so that test files outside a package find test_that() and friends.
 library(testthat)
 

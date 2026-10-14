@@ -4,17 +4,15 @@ One paragraph on what this app is for, who uses it, and the address where it is 
 
 ## Setting up
 
-Open R in this folder and run this once. It records the packages the app uses, with their versions,
-in a file named renv.lock, and writes the files that make R use those versions in this folder:
+The packages the app uses, with their versions, are listed in `renv.lock`. Open R in this folder;
+the first time, R installs renv on its own. Then install the listed packages once:
 
 ```text
-install.packages("renv")
-renv::init()
+renv::restore()
 ```
 
-Commit the files it creates. On another computer, `renv::restore()` installs the same versions.
-After you add or update a package, run `renv::snapshot()` and commit the change. The pull request
-check installs packages from renv.lock, so the tests cannot pass there until that file is committed.
+After you add or update a package, run `renv::snapshot()` and commit the change to `renv.lock`. The
+pull request check installs the packages that file lists.
 
 ## Running it on your computer
 

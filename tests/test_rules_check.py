@@ -105,6 +105,21 @@ def test_pre_commit_leaves_standards_copy_to_the_hosted_check(tmp_path):
     assert without_copies <= actual
 
 
+def test_renv_script_is_left_out_and_nothing_beside_it(tmp_path):
+    """Each renv/activate.R is skipped; another file under renv/ is not."""
+    write_tree(
+        tmp_path,
+        {
+            "renv/activate.R": "x <- 1\n",
+            "app/renv/activate.R": "x <- 1\n",
+            "renv/mine.R": "x <- 1\n",
+        },
+    )
+    git(tmp_path, "init", "-q")
+    git(tmp_path, "add", "-A")
+    assert rules_check.tracked_files(tmp_path) == ["renv/mine.R"]
+
+
 def test_every_rule_is_planted():
     """Every rule in the list appears in one of the two expected files."""
     planted = set()

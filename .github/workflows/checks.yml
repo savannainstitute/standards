@@ -203,6 +203,12 @@ jobs:
           elif git ls-files -- 'tests/*.py' | grep -q .; then
             if [ -f pyproject.toml ]; then
               python -m pip install --quiet -e .
+            elif git ls-files -- '*.py' | grep -v -E '(^|/)(tests/|\.)' | grep -q .; then
+              echo "This repository has Python code and tests but no pyproject.toml or"
+              echo "environment.yml at its top, so the check cannot install what the code"
+              echo "imports. Add one that lists those packages; the Python pipeline"
+              echo "template in the standards repository has both."
+              exit 1
             fi
             pytest_args="-p standards.pytest_needs --no-needs --strict-markers tests"
             if git ls-files -- '*.py' | grep -v -E '(^|/)(tests/|\.)' | grep -q .; then
