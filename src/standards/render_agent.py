@@ -11,56 +11,50 @@ nothing is written and the exit code is 1 when any file is stale.
 import argparse
 import json
 import sys
-import textwrap
 from pathlib import Path
 
 from standards import agent_files, rules_check
+from standards.markdown_wrap import fill
 from standards.rules import RULES
 
-# The Python line length in configs/ruff.toml, so one width serves the repo.
-WIDTH = 79
 RULES_URL = (
     "https://github.com/savannainstitute/standards/blob/main/docs/RULES.md"
 )
-
-HEADER = f"""# Rules for coding agents
-
-Every pull request in this repository runs the organization's check, which
-appears as `checks / lint` and blocks the merge when it fails. The rules
-below are that check's list, with the same ids its findings print. The full
-list with every shape the check looks for is at
-<{RULES_URL}>.
-
-## Before you commit
-
-- Run `pre-commit run --all-files`. It runs the same check on this
-  computer. Fix each finding it prints; do not silence it.
-- This repository holds no linter settings. They live in the organization's
-  standards repository, and a settings file added here is ignored.
-- Write commit messages and pull request text that say what the change
-  does. Add no tool attribution: no co-author trailer and no generated-with
-  line.
-- The pull request text is read by the check. A new dependency is named on
-  a `Dependencies:` line. A new Markdown file outside the docs folder is
-  listed under a `Docs added` heading. A removed test is listed under a
-  `Tests removed or skipped` heading. A source change with no test carries a
-  `No test because` line.
-- A test the hosted check cannot run is marked with what it needs, such as
-  `@pytest.mark.needs("a GPU")`. A bare skip is refused.
-- A test asserts on a value computed from a planted input, and the comment
-  beside the expected value derives it.
-"""
+INTRO = (
+    "Every pull request in this repository runs the organization's check, "
+    "which appears as `checks / lint` and blocks the merge when it fails. The "
+    "rules below are that check's list, with the same ids its findings print. "
+    "The full list with every shape the check looks for is at "
+    f"<{RULES_URL}>."
+)
+BEFORE_COMMIT = [
+    "Run `pre-commit run --all-files`. It runs the same check on this "
+    "computer. Fix each finding it prints; do not silence it.",
+    "This repository holds no linter settings. They live in the "
+    "organization's standards repository, and a settings file added here is "
+    "ignored.",
+    "Write commit messages and pull request text that say what the change "
+    "does. Add no tool attribution: no co-author trailer and no "
+    "generated-with line.",
+    "The pull request text is read by the check. A new dependency is named "
+    "on a `Dependencies:` line. A new Markdown file outside the docs folder "
+    "is listed under a `Docs added` heading. A removed test is listed under "
+    "a `Tests removed or skipped` heading. A source change with no test "
+    "carries a `No test because` line.",
+    "A test the hosted check cannot run is marked with what it needs, such "
+    'as `@pytest.mark.needs("a GPU")`. A bare skip is refused.',
+    "A test asserts on a value computed from a planted input, and the "
+    "comment beside the expected value derives it.",
+]
+HEADER = (
+    f"# Rules for coding agents\n\n{fill(INTRO)}\n\n## Before you commit\n\n"
+    + "".join(fill(item, "- ", "  ") + "\n" for item in BEFORE_COMMIT)
+)
 
 
 def render_rule(rule):
     """Return the Markdown list item for one rule."""
-    item = textwrap.fill(
-        f"- `{rule.id}`: {rule.rule} To fix it: {rule.fix}",
-        width=WIDTH,
-        subsequent_indent="  ",
-        break_long_words=False,
-        break_on_hyphens=False,
-    )
+    item = fill(f"`{rule.id}`: {rule.rule} To fix it: {rule.fix}", "- ", "  ")
     if not rule.examples:
         return item + "\n"
     shapes = "".join(f"  {example}\n" for example in rule.examples)

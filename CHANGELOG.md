@@ -2,35 +2,35 @@
 
 ## After 1.2.0
 
-There are no more releases or tags. Each entry reaches every repository's next pull request
-when it merges.
+There are no more releases or tags. Each entry reaches every repository's next pull request when it
+merges.
 
-- The caller workflow runs the check from `@main`, not `@v1`, and the templates pin the
-  standards hooks to a commit on main, not a tag. `pre-commit autoupdate` moves the pin.
+- The caller workflow runs the check from `@main`, not `@v1`, and the templates pin the standards
+  hooks to a commit on main, not a tag. `pre-commit autoupdate` moves the pin.
 
-- `decision-attribution` blocks the merge. It no longer reads "said", and reads "per" only
-  before a possessive or a date, after a measurement on every repository in the organization.
-- `standards-copy` no longer reads the pre-commit pin: a repository's `.pre-commit-config.yaml`
-  runs the standards hooks at any commit it chooses, and `pre-commit autoupdate` moves it. The
-  rule runs on the pull request only, since pre-commit runs the pinned commit and its copies.
-- Every part of the check runs when an earlier part fails, so one push reports every finding.
-  A part is skipped only when the install it needs failed.
+- `decision-attribution` blocks the merge. It no longer reads "said", and reads "per" only before a
+  possessive or a date, after a measurement on every repository in the organization.
+- `standards-copy` no longer reads the pre-commit pin: a repository's `.pre-commit-config.yaml` runs
+  the standards hooks at any commit it chooses, and `pre-commit autoupdate` moves it. The rule runs
+  on the pull request only, since pre-commit runs the pinned commit and its copies.
+- Every part of the check runs when an earlier part fails, so one push reports every finding. A part
+  is skipped only when the install it needs failed.
 - Every Dockerfile in a repository is linted with hadolint 2.15.1, and any finding fails.
-- The agent hook runs when Claude Code, Codex or Gemini ends its turn, and sends the agent
-  back once to fix the writing-rule lines in the files it changed. A new shared file,
-  `.codex/hooks.json`, and new entries in `.claude/settings.json` and `.gemini/settings.json`.
-- The agent hook also reports `decision-attribution` lines, after each write and at the end of
-  a turn.
+- The agent hook runs when Claude Code, Codex or Gemini ends its turn, and sends the agent back once
+  to fix the writing-rule lines in the files it changed. A new shared file, `.codex/hooks.json`, and
+  new entries in `.claude/settings.json` and `.gemini/settings.json`.
+- The agent hook also reports `decision-attribution` lines, after each write and at the end of a
+  turn.
 - At the end of a turn the agent hook runs pre-commit on the changed files when pre-commit is
   installed, and sends the agent back with its report when it fails.
 
 ## 1.2.0
 
-- A new rule, `untested-code`, blocks: a code file that defines a function or a class needs its
-  own test file, and a repository with code and no tests fails.
+- A new rule, `untested-code`, blocks: a code file that defines a function or a class needs its own
+  test file, and a repository with code and no tests fails.
 - Test coverage is reported for Python and JavaScript, and a repository needs 75% of its lines
-  covered. One that joined below that may not fall below its recorded start, and each pull
-  request must cover 90% of the code lines it changes until the repository reaches 75%.
+  covered. One that joined below that may not fall below its recorded start, and each pull request
+  must cover 90% of the code lines it changes until the repository reaches 75%.
 - A new rule, `decision-attribution`, warns on a decision credited to a person or a date.
 - The `typography` rule no longer looks for curly quotes.
 - Ruff allows a single capital letter, such as `X`, as a variable name.
@@ -41,18 +41,18 @@ when it merges.
 
 - The files for coding agents (`AGENTS.md`, `CLAUDE.md`, the Claude Code settings and hook, the
   Gemini settings), rendered from the rule list with `render-agent`.
-- A new rule, `standards-copy`: a repository's caller workflow, agent files and pre-commit pin
-  must match the copies here. Every repository moves its pre-commit `rev` to `v1.1.0`.
+- A new rule, `standards-copy`: a repository's caller workflow, agent files and pre-commit pin must
+  match the copies here. Every repository moves its pre-commit `rev` to `v1.1.0`.
 - R checks: Air, lintr, testthat, and help pages that match the code for a package.
 - JavaScript and TypeScript checks: ESLint, Prettier, the TypeScript compiler and vitest.
-- The five writing-style rules (`contrast`, `narration`, `banner`, `typography`,
-  `sales-vocabulary`) now warn and no longer block a merge.
+- The five writing-style rules (`contrast`, `narration`, `banner`, `typography`, `sales-vocabulary`)
+  now warn and no longer block a merge.
 - Markdown is linted with markdownlint in every repository.
 - A pipeline's tests run inside its conda environment in a second job, `conda-tests`.
-- Five more templates: R package, R analysis, Shiny app, web or mobile app, and documentation
-  and configuration.
+- Five more templates: R package, R analysis, Shiny app, web or mobile app, and documentation and
+  configuration.
 
 ## 1.0.0
 
-First release: the rule list and its check, the reusable check workflow, the Python linter
-settings, the pre-commit hooks, and the Python pipeline template.
+First release: the rule list and its check, the reusable check workflow, the Python linter settings,
+the pre-commit hooks, and the Python pipeline template.

@@ -5,35 +5,29 @@ Usage: render-rules [--check]
 
 import argparse
 import sys
-import textwrap
 from pathlib import Path
 
+from standards.markdown_wrap import fill
 from standards.rules import RULES
 
-HEADER = """# The rules
-
-Every repository in the organization is checked against this list on every
-pull request. A rule that blocks fails the check, and the pull request cannot
-merge until it passes. A rule that warns prints its finding for the author
-and the reviewer and does not fail the check.
-
-This file is generated from the rule list in `src/standards/rules.py`; edit
-that file and run `render-rules`.
-
-"""
+INTRO = [
+    "Every repository in the organization is checked against this list on "
+    "every pull request. A rule that blocks fails the check, and the pull "
+    "request cannot merge until it passes. A rule that warns prints its "
+    "finding for the author and the reviewer and does not fail the check.",
+    "This file is generated from the rule list in `src/standards/rules.py`; "
+    "edit that file and run `render-rules`.",
+]
 
 
 def wrap(paragraph):
-    """Return the paragraph wrapped to the header's width and a blank line."""
-    lines = textwrap.fill(
-        paragraph, width=79, break_long_words=False, break_on_hyphens=False
-    )
-    return lines + "\n\n"
+    """Return the paragraph filled to the Markdown width and a blank line."""
+    return fill(paragraph) + "\n\n"
 
 
 def render():
     """Return the Markdown text of the rule list."""
-    parts = [HEADER]
+    parts = ["# The rules\n\n", *(wrap(paragraph) for paragraph in INTRO)]
     for rule in RULES:
         severity = "Blocks" if rule.blocks else "Warns"
         parts.append(f"## {rule.id}\n\n")

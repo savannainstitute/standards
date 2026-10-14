@@ -122,8 +122,15 @@ jobs:
             exit 1
           fi
           if git ls-files -- '*.md' | grep -q .; then
+            status=0
+            if ! git ls-files -z -- '*.md' | xargs -0 "$STANDARDS_NODE/node_modules/.bin/prettier" \
+              --config "$STANDARDS_NODE/prettierrc.yaml" --no-editorconfig --check; then
+              echo "To format the files above, run: pre-commit run markdown-format --all-files"
+              status=1
+            fi
             "$STANDARDS_NODE/node_modules/.bin/markdownlint-cli2" \
-              --config "$STANDARDS_NODE/markdownlint-cli2.jsonc" "**/*.md"
+              --config "$STANDARDS_NODE/markdownlint-cli2.jsonc" "**/*.md" || status=1
+            exit "$status"
           fi
 
       - name: Install the repository's packages

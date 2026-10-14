@@ -1,2 +1,8 @@
 # Provisional line length: 80 is Prettier's own default for printWidth (prettier.io/docs/options).
 printWidth: 80
+# Markdown is formatted like code: prose filled to markdownlint's line length of 100.
+overrides:
+  - files: "*.md"
+    options:
+      printWidth: 100
+      proseWrap: always
