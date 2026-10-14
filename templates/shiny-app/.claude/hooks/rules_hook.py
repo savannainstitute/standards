@@ -1,19 +1,23 @@
-"""Claude Code hook: catch the organization's style rules while editing.
+"""Coding agent hook: catch the organization's style rules while editing.
 
-Usage: rules_hook.py post-write | pre-shell
+Usage: rules_hook.py post-write | pre-shell | stop claude|codex|gemini
 
-Claude Code passes the tool call as JSON on standard input. post-write reads
-the file just written and tells the agent which lines the pull request check
+The agent passes the event as JSON on standard input. post-write reads the
+file Claude Code just wrote and tells it which lines the pull request check
 will report for the writing rules; it never refuses a write. pre-shell
-refuses a recursive delete that reaches outside the project. The patterns
-come from rules_hook.json beside this file, which the organization's
-standards repository renders from the same list its check uses.
+refuses a recursive delete that reaches outside the project. stop runs when
+Claude Code, Codex or Gemini ends its turn: it reads every file changed in
+the working tree and, when the check would report a line, sends the agent
+back once with the list. The patterns come from rules_hook.json beside this
+file, which the organization's standards repository renders from the same
+list its check uses.
 """
 
 import json
 import os
 import posixpath
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -24,6 +28,8 @@ HOME_PREFIXES = ("~", "$home", "${home}", "$env:userprofile", "%userprofile%")
 SEGMENT = re.compile(r"&&|\|\||[;|\n]")
 DRIVE = re.compile(r"^([A-Za-z]):(/|$)")
 SKIPPED_COMMENT_STARTS = ("#!", "#'", "# -*-")
+# The decision word each tool's end-of-turn event reads as "keep working".
+CONTINUE_DECISION = {"claude": "block", "codex": "block", "gemini": "deny"}
 
 
 def load_patterns():
@@ -258,17 +264,83 @@ def pre_shell(call):
             return
 
 
+def changed_files(working_dir):
+    """Return the repository root and its changed or new files, or None."""
+    top = subprocess.run(
+        ["git", "-C", working_dir, "rev-parse", "--show-toplevel"],
+        capture_output=True,
+        text=True,
+    )
+    if top.returncode != 0:
+        return None
+    root = top.stdout.strip()
+    status = subprocess.run(
+        ["git", "-C", root, "status", "--porcelain", "-z", "-uall"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    entries = iter(status.stdout.split("\0"))
+    paths = []
+    for entry in entries:
+        if not entry:
+            continue
+        if entry[0] in "RC":
+            next(entries, None)
+        path = entry[3:]
+        if (Path(root) / path).is_file():
+            paths.append(path)
+    return root, sorted(paths)
+
+
+def stop(call, tool, patterns):
+    """Send the agent back once when a changed file has a finding."""
+    if call.get("stop_hook_active"):
+        return
+    changed = changed_files(call.get("cwd") or os.getcwd())
+    if changed is None:
+        return
+    root, paths = changed
+    lines = []
+    for path in paths:
+        text = (Path(root) / path).read_text(
+            encoding="utf-8", errors="replace"
+        )
+        lines.extend(
+            f"{path} line {n}: {rule}"
+            for n, rule in review_findings(path, text, patterns)
+        )
+    if not lines:
+        return
+    lines.insert(
+        0,
+        "Before you finish, the pull request check will report these lines "
+        "in the files changed here. Fix each as AGENTS.md says, or say in "
+        "your reply why a line stays:",
+    )
+    reason = "\n".join(lines)
+    print(json.dumps({"decision": CONTINUE_DECISION[tool], "reason": reason}))
+
+
 def main(argv=None):
-    """Read the tool call from standard input and run the named mode."""
+    """Read the event from standard input and run the named mode."""
     argv = sys.argv[1:] if argv is None else argv
-    if len(argv) != 1 or argv[0] not in ("post-write", "pre-shell"):
-        raise SystemExit("usage: rules_hook.py post-write|pre-shell")
+    valid = argv in (["post-write"], ["pre-shell"]) or (
+        len(argv) == 2 and argv[0] == "stop" and argv[1] in CONTINUE_DECISION
+    )
+    if not valid:
+        raise SystemExit(
+            "usage: rules_hook.py post-write|pre-shell"
+            "|stop claude|codex|gemini"
+        )
     raw = sys.stdin.read()
     if not raw.strip():
         return 0
     call = json.loads(raw)
     if argv[0] == "pre-shell":
         pre_shell(call)
+    elif argv[0] == "stop":
+        stop(call, argv[1], load_patterns())
     else:
         post_write(call, load_patterns())
     return 0

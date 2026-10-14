@@ -9,6 +9,9 @@ Changes collect here and are released together when a repository needs them.
 - `standards-copy` accepts a pre-commit pin to any release with the current major version, so
   a new release no longer asks every repository to move its pin.
 - Every Dockerfile in a repository is linted with hadolint 2.15.1, and any finding fails.
+- The agent hook runs when Claude Code, Codex or Gemini ends its turn, and sends the agent
+  back once to fix the writing-rule lines in the files it changed. A new shared file,
+  `.codex/hooks.json`, and new entries in `.claude/settings.json` and `.gemini/settings.json`.
 
 ## 1.2.0
 

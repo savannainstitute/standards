@@ -74,23 +74,35 @@ use it.
 
 ## Files for coding agents
 
-Every repository carries the same six files for people who work with a coding agent such as
+Every repository carries the same seven files for people who work with a coding agent such as
 Claude Code, Codex or Gemini:
 
 - `AGENTS.md`: the rules, written as instructions. Codex reads it on its own.
 - `CLAUDE.md`: one line that makes Claude Code read `AGENTS.md`.
-- `.gemini/settings.json`: makes Gemini read `AGENTS.md`.
+- `.gemini/settings.json`: makes Gemini read `AGENTS.md`, and runs the hook when Gemini ends
+  its turn.
+- `.codex/hooks.json`: runs the hook when Codex ends its turn.
 - `.claude/settings.json`: turns off the attribution lines Claude Code adds to commits and pull
   requests, and runs the hook below.
-- `.claude/hooks/rules_hook.py` and `.claude/hooks/rules_hook.json`: a hook that tells Claude
-  Code, after it writes a file, which lines the check will report for the writing rules, and
+- `.claude/hooks/rules_hook.py` and `.claude/hooks/rules_hook.json`: the hook. When the agent
+  ends its turn, it reads every file changed in the working tree and, if the check would
+  report a line for the writing rules, sends the agent back once with the list to fix. It
+  also tells Claude Code, after each file it writes, which lines the check will report, and
   stops it from deleting a folder outside the project. It never refuses a write. The hook
-  needs Python on your computer.
+  needs Python on your computer, as `python`.
 
-These files are a convenience and can be switched off on your own computer. The check on the
-pull request is what blocks. A repository may add its own notes to `AGENTS.md` and `CLAUDE.md`
-below the marker line; everything above it, and the other four files, must match the copies
-here, and the check says so when they do not.
+The hook covers only the writing rules, which it can read with Python alone. Ruff, Air,
+lintr, markdownlint and the tests run in pre-commit and in the check on the pull request.
+
+Nothing needs to be installed for the hooks: each tool finds its file in the repository. Each
+asks once before running hooks it has not seen. Claude Code asks you to trust the folder the
+first time you open it, Codex asks you to review a hook in `/hooks`, and Gemini warns before a
+new or changed hook runs. They are a convenience and can be switched off on your own computer.
+The check on the pull request is what blocks.
+
+A repository may add its own notes to `AGENTS.md` and `CLAUDE.md` below the marker line;
+everything above it, and the other five files, must match the copies here, and the check says
+so when they do not.
 
 ## Layout of this repository
 

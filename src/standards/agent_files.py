@@ -15,6 +15,7 @@ COPIES = {
     "CLAUDE.md": "CLAUDE.md",
     "claude_settings.json": ".claude/settings.json",
     "gemini_settings.json": ".gemini/settings.json",
+    "codex_hooks.json": ".codex/hooks.json",
     "rules_hook.py": ".claude/hooks/rules_hook.py",
     "rules_hook.json": ".claude/hooks/rules_hook.json",
 }
