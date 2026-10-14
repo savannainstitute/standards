@@ -23,7 +23,7 @@ def run_hook(mode, payload):
     """Run the hook as Claude Code does and return (exit code, output)."""
     env = {k: v for k, v in os.environ.items() if k != "CLAUDE_PROJECT_DIR"}
     result = subprocess.run(
-        [sys.executable, str(HOOK), mode],
+        [sys.executable, str(HOOK), *mode.split()],
         input=json.dumps(payload),
         capture_output=True,
         text=True,
@@ -138,6 +138,96 @@ def test_post_write_is_silent_on_a_clean_file(tmp_path):
     code, output = run_hook("post-write", write_payload(target, ""))
     assert code == 0
     assert output is None
+
+
+def git(repo, *args):
+    """Run git in the planted repository."""
+    subprocess.run(["git", "-C", str(repo), *args], check=True)
+
+
+def planted_repo(tmp_path):
+    """Return a repository with one clean commit and two edited files."""
+    git(tmp_path, "init", "-q")
+    (tmp_path / "clean.py").write_text("x = 1\n", encoding="utf-8")
+    (tmp_path / "old.py").write_text("y = 2\n", encoding="utf-8")
+    git(tmp_path, "add", "-A")
+    git(
+        tmp_path,
+        "-c",
+        "user.name=test",
+        "-c",
+        "user.email=test@example.org",
+        "commit",
+        "-qm",
+        "first",
+    )
+    (tmp_path / "old.py").write_text("y = 2  # a robust default\n")
+    (tmp_path / "new.md").write_text("Line one.\nThis is **bold**.\n")
+    return tmp_path
+
+
+def stop_payload(repo, active=False):
+    return {"cwd": str(repo), "stop_hook_active": active}
+
+
+@pytest.mark.parametrize(
+    ("tool", "word"),
+    [("claude", "block"), ("codex", "block"), ("gemini", "deny")],
+)
+def test_stop_sends_the_agent_back_with_each_finding(tmp_path, tool, word):
+    """old.py line 1 is sales vocabulary; new.md line 2 is bold."""
+    repo = planted_repo(tmp_path)
+    code, output = run_hook(f"stop {tool}", stop_payload(repo))
+    assert code == 0
+    assert output["decision"] == word
+    assert output["reason"].splitlines()[1:] == [
+        "new.md line 2: typography",
+        "old.py line 1: sales-vocabulary",
+    ]
+
+
+def test_stop_lets_the_second_stop_through(tmp_path):
+    repo = planted_repo(tmp_path)
+    code, output = run_hook("stop claude", stop_payload(repo, active=True))
+    assert code == 0
+    assert output is None
+
+
+def test_stop_is_silent_when_the_changed_files_are_clean(tmp_path):
+    repo = planted_repo(tmp_path)
+    (repo / "old.py").write_text("y = 3\n")
+    (repo / "new.md").unlink()
+    code, output = run_hook("stop codex", stop_payload(repo))
+    assert code == 0
+    assert output is None
+
+
+def test_stop_reads_a_repository_with_no_commit_yet(tmp_path):
+    git(tmp_path, "init", "-q")
+    (tmp_path / "a.py").write_text("x = 1  # a robust default\n")
+    code, output = run_hook("stop gemini", stop_payload(tmp_path))
+    assert code == 0
+    assert output["reason"].splitlines()[1:] == [
+        "a.py line 1: sales-vocabulary"
+    ]
+
+
+def test_stop_is_silent_outside_a_repository(tmp_path):
+    (tmp_path / "a.py").write_text("x = 1  # a robust default\n")
+    code, output = run_hook("stop claude", stop_payload(tmp_path))
+    assert code == 0
+    assert output is None
+
+
+def test_stop_needs_the_tool_named():
+    result = subprocess.run(
+        [sys.executable, str(HOOK), "stop"],
+        input="{}",
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "usage" in result.stderr
 
 
 def shell_payload(project, command, tool="Bash"):

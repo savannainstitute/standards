@@ -44,6 +44,7 @@ pre-commit install
 ## Coding agents
 
 `AGENTS.md` holds the organization's rules for coding agents, and `CLAUDE.md`, the
-`.claude` folder and the `.gemini` folder make Claude Code and Gemini read it. Add notes about
-this pipeline below the marker line in `AGENTS.md`; leave the rest as it is, because the check
-compares it with the organization's copy.
+`.claude` folder and the `.gemini` folder make Claude Code and Gemini read it. The `.claude`,
+`.codex` and `.gemini` folders also run the organization's hook when the agent ends its turn.
+Add notes about this pipeline below the marker line in `AGENTS.md`; leave the rest as it is,
+because the check compares it with the organization's copy.

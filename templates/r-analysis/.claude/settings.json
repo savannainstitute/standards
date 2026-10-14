@@ -26,6 +26,16 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "for p in python python3; do if command -v \"$p\" >/dev/null 2>&1; then exec \"$p\" \"${CLAUDE_PROJECT_DIR}/.claude/hooks/rules_hook.py\" stop claude; fi; done; exit 0"
+          }
+        ]
+      }
     ]
   }
 }
