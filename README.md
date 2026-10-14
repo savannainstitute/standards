@@ -126,8 +126,8 @@ so when they do not.
 
 Open a pull request here. The rule list is `src/standards/rules.py`; `docs/RULES.md` is
 rendered from it with `render-rules` and the files for coding agents with `render-agent`, and
-the self-test fails if either is out of date or if a rule has no planted example. Repositories
-pick up a merged change on their next pull request once it is released. The pre-commit hooks
-on your computer run the release your repository's `.pre-commit-config.yaml` names, which may
-be older; nothing requires it to move. Run `pre-commit autoupdate` to move it to the newest
-release, so your commits are checked by the same rules as the pull request.
+the self-test fails if either is out of date or if a rule has no planted example. Every
+repository runs the check from `main`, so a merged change applies to its next pull request.
+The pre-commit hooks on your computer run the commit your repository's
+`.pre-commit-config.yaml` names, which may be older; nothing requires it to move. Run
+`pre-commit autoupdate` to move it to the newest commit on `main`.

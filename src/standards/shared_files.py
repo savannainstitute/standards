@@ -2,12 +2,12 @@
 
 A repository carries the caller workflow and the agent files copied from the
 standards repository, and a pre-commit configuration that runs the standards
-hooks at whichever release the repository chooses. findings() names each one
+hooks at whichever commit the repository chooses. findings() names each one
 that is missing or out of date and says how to bring it back in line.
 """
 
 import subprocess
-from importlib import metadata, resources
+from importlib import resources
 from pathlib import Path
 
 import yaml
@@ -17,17 +17,14 @@ from standards import agent_files
 HOOKS_URL = "https://github.com/savannainstitute/standards"
 CALLER_PATH = ".github/workflows/checks.yml"
 PRE_COMMIT_PATH = ".pre-commit-config.yaml"
+# Tip of main when the tags were dropped; pre-commit autoupdate moves it.
+TEMPLATE_REV = "2c3d619e980638b7dc33126e47a9476abb16af22"
 
 
 def caller_text():
     """Return the text of the caller workflow every repository carries."""
     path = resources.files("standards").joinpath("configs", "caller.yml")
     return path.read_text(encoding="utf-8")
-
-
-def pinned_rev():
-    """Return this package's release tag, which the templates pin."""
-    return "v" + metadata.version("savannainstitute-standards")
 
 
 def pre_commit_rev(repo_dir):
@@ -110,7 +107,7 @@ def write_copies(repo_dir):
         "repos": [
             {
                 "repo": HOOKS_URL,
-                "rev": pinned_rev(),
+                "rev": TEMPLATE_REV,
                 "hooks": [{"id": "rules-check"}],
             }
         ]

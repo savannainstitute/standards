@@ -4,7 +4,7 @@ Every pull request in this repository runs the organization's check, which
 appears as `checks / lint` and blocks the merge when it fails. The rules
 below are that check's list, with the same ids its findings print. The full
 list with every shape the check looks for is at
-<https://github.com/savannainstitute/standards/blob/v1/docs/RULES.md>.
+<https://github.com/savannainstitute/standards/blob/main/docs/RULES.md>.
 
 ## Before you commit
 
@@ -154,9 +154,9 @@ list with every shape the check looks for is at
 
 - `standards-copy`: The caller workflow and the files for coding agents match
   the standards repository's copies, and .pre-commit-config.yaml runs the
-  standards hooks at any release. Text below the marker line in AGENTS.md and
+  standards hooks at any commit. Text below the marker line in AGENTS.md and
   CLAUDE.md belongs to the repository and is not compared. Checked on the pull
-  request only, since pre-commit runs the release the repository pins. To fix
+  request only, since pre-commit runs the commit the repository pins. To fix
   it: Copy the file the finding names from the template for this kind of
   project in the standards repository. To run newer hooks on your computer, run
   pre-commit autoupdate.

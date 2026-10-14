@@ -21,4 +21,4 @@ exempt:
     reason: this repository has no Node project to run a vitest test of its own reporter
   - path: .pre-commit-config.yaml
     rules: [standards-copy]
-    reason: this repository runs its hooks from the working copy, so it pins no released version
+    reason: this repository runs its hooks from the working copy, so it pins no commit
