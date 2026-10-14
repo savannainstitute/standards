@@ -56,7 +56,10 @@ pre-commit run --all-files
 ```
 
 The pull request rules (a new dependency with no explanation, a removed test, a changed source file
-with no test) need the pull request itself and run only on GitHub.
+with no test) need the pull request itself and run only on GitHub. Every new pull request in the
+organization starts from the template in the organization's `.github` repository, which carries the
+headings those rules read; write under a heading when it applies and leave it alone when it does
+not.
 
 ## Tests the hosted check cannot run
 

@@ -806,13 +806,17 @@ def parse_diff(repo_dir, base, head):
         if status.startswith("R"):
             status, path = "A", path.split("\t")[-1]
         changes[path] = {"status": status[0], "added": [], "removed": []}
-    current = None
+    current = previous = None
     new_line = 0
     diff = git(repo_dir, "diff", "--no-color", "-U0", base, head)
     for line in diff.splitlines():
-        if line.startswith("+++ "):
+        if line.startswith("--- "):
+            previous = line[4:]
+            previous = previous[2:] if previous.startswith("a/") else None
+        elif line.startswith("+++ "):
+            # A deleted file's new side is /dev/null; keep the old path.
             current = line[4:]
-            current = current[2:] if current.startswith("b/") else None
+            current = current[2:] if current.startswith("b/") else previous
         elif line.startswith("@@"):
             hunk = re.match(r"@@ -\d+(?:,\d+)? \+(\d+)", line)
             new_line = int(hunk.group(1))
@@ -830,10 +834,47 @@ def parse_diff(repo_dir, base, head):
     return changes
 
 
+HTML_COMMENT = re.compile(r"<!--.*?-->", re.S)
+SECTION_HEADINGS = ("Dependencies", "Docs added", "Tests removed or skipped")
+HEADING_LINE = re.compile(
+    r"^(#|\s*(" + "|".join(re.escape(h) for h in SECTION_HEADINGS) + r")\b)",
+    re.I,
+)
+
+
+def without_comments(body):
+    """Return the pull request body without the template's HTML comments."""
+    return HTML_COMMENT.sub("", body)
+
+
 def body_section(body, heading):
-    """Text of the pull request body from a heading line to the end."""
-    match = re.search(rf"^#*\s*{re.escape(heading)}\b.*$", body, re.M | re.I)
-    return body[match.start() :] if match else ""
+    """Return what the author wrote under a heading, up to the next one.
+
+    The rest of the heading's own line counts, so "Dependencies: pandas"
+    on one line is a filled section. A heading with nothing under it is
+    an empty section, which is what the pull request template leaves.
+    """
+    lines = without_comments(body).splitlines()
+    pattern = re.compile(rf"^#*\s*{re.escape(heading)}\b:?(.*)$", re.I)
+    for n, line in enumerate(lines):
+        match = pattern.match(line)
+        if not match:
+            continue
+        section = [match.group(1)]
+        for following in lines[n + 1 :]:
+            if HEADING_LINE.match(following):
+                break
+            section.append(following)
+        return "\n".join(section)
+    return ""
+
+
+def names_package(section, name):
+    """Whether the section names the package as a whole word."""
+    edge = r"[a-z0-9_.@/-]"
+    return bool(
+        re.search(rf"(?<!{edge}){re.escape(name.lower())}(?!{edge})", section)
+    )
 
 
 DEPENDENCY_SHAPES = {
@@ -943,7 +984,8 @@ def check_diff(report, repo_dir, base, head, body):
     changes = parse_diff(repo_dir, base, head)
     docs_added = body_section(body, "Docs added").lower()
     dependencies = body_section(body, "Dependencies").lower()
-    tests_removed = body_section(body, "Tests removed or skipped")
+    tests_removed = body_section(body, "Tests removed or skipped").strip()
+    answered = "no test because" in without_comments(body).lower()
     source_changed = []
     test_lines_added = False
     for path, change in changes.items():
@@ -959,7 +1001,7 @@ def check_diff(report, repo_dir, base, head, body):
         if is_manifest(path):
             head_text = head_file(repo_dir, head, path)
             for n, name in dependency_names(path, change["added"], head_text):
-                if name.lower() not in dependencies:
+                if not names_package(dependencies, name):
                     report.add(
                         "dependency-added",
                         path,
@@ -973,11 +1015,7 @@ def check_diff(report, repo_dir, base, head, body):
             source_changed.append(path)
         if TEST_PATH.search(path) and change["added"]:
             test_lines_added = True
-    if (
-        source_changed
-        and not test_lines_added
-        and "no test because" not in body.lower()
-    ):
+    if source_changed and not test_lines_added and not answered:
         report.add("fix-without-test", source_changed[0], 0)
 
 
