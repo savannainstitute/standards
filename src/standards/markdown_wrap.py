@@ -5,7 +5,7 @@ breaks inside a code span; fill() does the same, so a file written by
 render-agent or render-rules is already formatted.
 """
 
-# printWidth for Markdown in configs/prettierrc.yaml, and MD013 in markdownlint.
+# Markdown printWidth in configs/prettierrc.yaml, and MD013 in markdownlint.
 WIDTH = 100
 
 
@@ -26,7 +26,7 @@ def words(text):
 
 
 def fill(text, first="", rest=""):
-    """Return text filled to WIDTH, the first line after first, the rest after rest."""
+    """Return text filled to WIDTH, line 1 after first and the rest after rest."""
     lines = []
     line = first
     for word in words(text):
