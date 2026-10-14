@@ -69,6 +69,8 @@ MANIFESTS = (
 )
 # Larger files are data or generated; GitHub's diff view stops at this size.
 MAX_BYTES = 1_000_000
+# renv::init writes this script and renv rewrites it; nobody edits it.
+TOOL_WRITTEN = {"renv/activate.R"}
 
 CONTRAST = [
     re.compile(r"\bnot\b[^.;\n]{1,60},\s*but\b", re.I),
@@ -337,9 +339,9 @@ def git(repo_dir, *args):
 
 
 def tracked_files(repo_dir):
-    """Return every path git tracks, relative to the repo root."""
+    """Return every path git tracks except tool-written ones, from the root."""
     out = git(repo_dir, "ls-files", "-z")
-    return [p for p in out.split("\0") if p]
+    return [p for p in out.split("\0") if p and p not in TOOL_WRITTEN]
 
 
 def read_text(repo_dir, path):
