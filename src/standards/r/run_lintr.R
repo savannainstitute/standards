@@ -19,10 +19,25 @@ source(file.path(script_dir, "lintr_settings.R"))
 
 is_package <- file.exists(file.path(repo_dir, "DESCRIPTION"))
 lint_repo <- if (is_package) lintr::lint_package else lintr::lint_dir
+default_exclusions <- if (is_package) {
+  list(file.path("R", "RcppExports.R"))
+} else {
+  list("renv", "packrat")
+}
+
+# renv writes activate.R and rewrites it on update; skipped wherever it sits.
+renv_scripts <- list.files(
+  repo_dir,
+  pattern = "^activate[.]R$",
+  recursive = TRUE
+)
+renv_scripts <- renv_scripts[basename(dirname(renv_scripts)) == "renv"]
+
 lints <- lint_repo(
   repo_dir,
   linters = central_linters,
-  parse_settings = FALSE
+  parse_settings = FALSE,
+  exclusions = c(default_exclusions, as.list(renv_scripts))
 )
 
 for (lint in lints) {
