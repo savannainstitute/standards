@@ -1,6 +1,5 @@
 {
   "name": "standards-node-tools",
-  "version": "1.0.0",
   "private": true,
   "description": "Pins the Node tools the check runs. Each version is the newest the npm registry listed when it was pinned; typescript is held below 6.1 by the range typescript-eslint accepts.",
   "license": "MIT",

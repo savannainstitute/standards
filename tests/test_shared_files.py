@@ -52,7 +52,9 @@ def pin_findings(tmp_path, rev):
     return shared_files.findings(tmp_path)
 
 
-@pytest.mark.parametrize("rev", ["v0.0.1", "v1.0.0", "main", "v10.0.0"])
+@pytest.mark.parametrize(
+    "rev", ["main", "my-branch", "984e044b9246b289669a6134292a4be25e981f6d"]
+)
 def test_any_pin_passes(tmp_path, rev):
     """The rev is the repository's to choose; only the hooks must be there."""
     assert pin_findings(tmp_path, rev) == []
