@@ -72,3 +72,16 @@ def test_decide(percent, start, changed, passes, words):
     ok, message = coverage_gate.decide(percent, start, changed)
     assert ok is passes
     assert words in message
+
+
+def test_an_absolute_filename_resolves_inside_the_repository(tmp_path):
+    """Covr writes absolute paths; the one under the repo maps to R/a.R."""
+    report = tmp_path / "r.xml"
+    report.write_text(
+        '<coverage><packages><package><classes><class filename="'
+        + (tmp_path / "R" / "a.R").as_posix()
+        + '"><lines><line number="1" hits="1"/><line number="2" hits="0"/>'
+        "</lines></class></classes></package></packages></coverage>"
+    )
+    lines = coverage_gate.load_lines(tmp_path, [report])
+    assert lines == {"R/a.R": {1: 1, 2: 0}}
