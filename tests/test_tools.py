@@ -30,3 +30,10 @@ def test_ruff_needs_check_or_format(argv):
 def test_config_command_needs_one_name():
     with pytest.raises(SystemExit, match="usage: standards-config NAME"):
         tools.print_config_path(["a", "b"])
+
+
+def test_markdown_missing_node_explains_installation(monkeypatch):
+    """A missing Node installation produces an actionable prerequisite."""
+    monkeypatch.setattr(tools.shutil, "which", lambda _name: None)
+    with pytest.raises(SystemExit, match="Install Node.js 24"):
+        tools.main_markdown()

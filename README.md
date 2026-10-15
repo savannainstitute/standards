@@ -41,7 +41,9 @@ and push again; the check runs again on its own.
 ## Running the checks on your own computer
 
 Each repository made from a template carries a `.pre-commit-config.yaml` that runs the same checks
-when you commit. Install pre-commit once:
+when you commit. Install Python 3.11 or later and Node.js 24 including npm. The Markdown hook
+downloads the pinned Prettier version into npm's cache on first use; subsequent runs reuse it.
+Install pre-commit once:
 
 ```text
 pip install pre-commit
