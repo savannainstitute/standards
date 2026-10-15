@@ -55,9 +55,11 @@ def pin_findings(tmp_path, rev):
 @pytest.mark.parametrize(
     "rev", ["main", "my-branch", "984e044b9246b289669a6134292a4be25e981f6d"]
 )
-def test_any_pin_passes(tmp_path, rev):
-    """The rev is the repository's to choose; only the hooks must be there."""
-    assert pin_findings(tmp_path, rev) == []
+def test_mismatched_pins_are_rejected(tmp_path, rev):
+    """Moving branches and unrelated commits cannot match the workflow."""
+    assert [p for p, _ in pin_findings(tmp_path, rev)] == [
+        shared_files.PRE_COMMIT_PATH
+    ]
 
 
 def test_a_config_without_the_standards_hooks_is_reported(tmp_path):
@@ -74,7 +76,9 @@ def test_an_edited_caller_is_reported(tmp_path):
     shared_files.write_copies(tmp_path)
     caller = tmp_path / ".github" / "workflows" / "checks.yml"
     caller.write_text(
-        caller.read_text(encoding="utf-8").replace("@main", "@my-branch"),
+        caller.read_text(encoding="utf-8").replace(
+            "@" + shared_files.TEMPLATE_REV, "@my-branch"
+        ),
         encoding="utf-8",
     )
     track(tmp_path)

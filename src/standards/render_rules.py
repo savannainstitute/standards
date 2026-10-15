@@ -16,7 +16,8 @@ INTRO = [
     "November 13, 2026. Staged migration begins December 4, 2026; all "
     "active organization repositories must comply with the standards by "
     "March 5, 2027. Feedback continues during migration and afterward.",
-    "Required checks are activated with each owner during migration, "
+    "Under the proposed migration process, required checks are activated "
+    "with each owner during migration, "
     "after the setup is verified. Each repository is checked in full after "
     "its initial cleanup; rules identified as change-specific inspect the "
     "pull request's changes. The same requirements apply to all authors, "
@@ -32,6 +33,23 @@ INTRO = [
     "[CONTRIBUTING](https://github.com/savannainstitute/"
     ".github/blob/main/CONTRIBUTING.md) "
     "for the pull request process and handling failed checks.",
+    "The rule entries describe the proposed release. Existing installations "
+    "may still follow the standards main branch with separate local hook "
+    "revisions. During migration, install a validated release as a complete "
+    "bundle. The revised daily monitor reports usage and drift without "
+    "disabling workflows, reactivating them, or enabling required checks. "
+    "Deployment requires release validation and owner coordination. "
+    "Existing protections remain in effect.",
+    "Scientific validation is a review responsibility described in "
+    "CONTRIBUTING. Automated tests and coverage cannot establish that a "
+    "method, reference result, or scientific interpretation is correct.",
+    "American English applies to project-authored prose. Preserve external "
+    "identifiers, data values, quotations, and reference titles. The current "
+    "spelling check excludes inline backtick literals and Markdown block "
+    "quotations. Other false positives remain possible; findings are "
+    "advisory. Report incorrect findings rather than changing "
+    "required literals. A warning does not require a change to an external "
+    "interface or scientific meaning.",
 ]
 
 

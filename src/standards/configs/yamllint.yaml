@@ -8,3 +8,5 @@ rules:
     check-keys: false
   line-length:
     max: 100
+    # Immutable workflow references are single values that cannot be wrapped.
+    allow-non-breakable-inline-mappings: true

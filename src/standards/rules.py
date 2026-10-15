@@ -156,7 +156,8 @@ RULES = (
         False,
         PROSE + ", " + TEXT,
         'Project prose uses American English. The check excludes code '
-        'identifiers and library argument names.',
+        'identifiers and library argument names. Inline backtick literals '
+        'and Markdown block quotations are excluded from spelling checks.',
         'Replace flagged spellings with their American English equivalents.',
         ("colour", "behaviour", "analyse", "centre", "labelled", "grey"),
     ),
@@ -369,14 +370,15 @@ RULES = (
         "standards-copy",
         True,
         "the files copied from the standards repository",
-        'The caller workflow and shared coding-agent files must match the '
-        'central copies. The pre-commit configuration must reference the '
-        'standards hooks at a commit. Repository-specific text below the '
+        'The caller workflow and local hooks must reference the same full '
+        'commit SHA. Shared coding-agent files must match that release. '
+        'The hosted check verifies the executing workflow revision. '
+        'Repository-specific text below the '
         'marker in AGENTS.md and CLAUDE.md is excluded from comparison. '
         'This comparison runs on pull requests; local hooks use their '
         'pinned version.',
-        'Restore the indicated file from the appropriate project template. '
-        'Use pre-commit autoupdate to update local hook versions.',
+        'Use standards-adopt with the selected release commit to update '
+        'the workflow, local hooks, and agent files together.',
     ),
     Rule(
         "stray-markdown",
