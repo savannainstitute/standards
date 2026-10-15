@@ -12,8 +12,12 @@ from standards.rules import RULES
 
 INTRO = [
     "This reference documents the organization-specific automated checks "
-    "for Savanna Institute repositories. The contribution requirements take "
-    "effect on December 4, 2026. Each repository is checked in full after "
+    "proposed for Savanna Institute repositories. Initial feedback is due "
+    "November 13, 2026. Staged migration begins December 4, 2026; all "
+    "active organization repositories must comply with the standards by "
+    "March 5, 2027. Feedback continues during migration and afterward.",
+    "Required checks are activated with each owner during migration, "
+    "after the setup is verified. Each repository is checked in full after "
     "its initial cleanup; rules identified as change-specific inspect the "
     "pull request's changes. The same requirements apply to all authors, "
     "including work produced with coding agents.",
@@ -53,9 +57,10 @@ def render():
             "and the practical effect: useful requirements, unclear wording, "
             "unnecessary effort, incorrect findings, or blocked work. Include "
             "an example and an alternative where possible, and state any "
-            "deadline. Send sensitive examples directly. Feedback before "
-            "December 4 will inform the rollout; "
-            "issues can also be raised afterward."
+            "deadline. Send sensitive examples directly. "
+            "Submit initial feedback "
+            "by November 13, 2026. Continue reporting problems during "
+            "migration and after the March 5, 2027 compliance deadline."
         )
     )
     for heading, blocks in (
