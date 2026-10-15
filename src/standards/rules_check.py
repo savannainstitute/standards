@@ -147,6 +147,20 @@ COPY_SUFFIX = re.compile(
     re.I,
 )
 DATA_DIR = re.compile(r"(^|/)(data|raw_data)/")
+# Someone else's software, which an environment file names instead (B8).
+INSTALLER_SUFFIXES = {".whl", ".exe", ".msi", ".dmg", ".pkg", ".deb", ".rpm"}
+# The kinds B8 sends through LFS: images, rasters, point clouds, video, R
+# data, models, archives, PDFs, spreadsheets; configs/gitattributes lists them.
+BINARY_SUFFIXES = {
+    ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".heic", ".tif",
+    ".tiff", ".las", ".laz", ".ply", ".pcd", ".mp4", ".mov", ".avi",
+    ".rds", ".rda", ".rdata", ".pt", ".pth", ".h5", ".hdf5", ".onnx",
+    ".pkl", ".joblib", ".npy", ".npz", ".zip", ".tar", ".gz", ".tgz",
+    ".7z", ".pdf", ".gpkg", ".shp", ".dbf", ".parquet", ".feather",
+    ".xlsx", ".docx", ".pptx",
+}  # fmt: skip
+LFS_POINTER = "version https://git-lfs.github.com/spec/v1"
+DATA_README = "data/README.md"
 MACHINE_COMPONENTS = {
     ".DS_Store",
     "Thumbs.db",
@@ -666,6 +680,47 @@ def check_path(report, path):
         for p in parts
     ):
         report.add("machine-file", path, 0)
+    if PurePosixPath(name).suffix.lower() in INSTALLER_SUFFIXES:
+        report.add("installer-committed", path, 0)
+
+
+def check_data_listed(report, repo_dir, paths):
+    """Warn on each file under data/ that data/README.md does not name."""
+    data_files = [
+        p
+        for p in paths
+        if p.startswith("data/")
+        and p != DATA_README
+        and PurePosixPath(p).name != ".gitattributes"
+    ]
+    if not data_files:
+        return
+    readme = read_text(repo_dir, DATA_README) or ""
+    for path in data_files:
+        relative = path[len("data/") :]
+        if relative in readme or PurePosixPath(path).name in readme:
+            continue
+        report.add(
+            "data-unlisted",
+            path,
+            0,
+            f"{DATA_README} does not name {relative}.",
+        )
+
+
+def lfs_filtered(repo_dir, path):
+    """Whether .gitattributes sends the path through the LFS filter."""
+    out = git(repo_dir, "check-attr", "filter", "--", path)
+    return out.strip().endswith(": filter: lfs")
+
+
+def binary_outside_lfs(repo_dir, head, path):
+    """Whether an added binary file is committed as content, not a pointer."""
+    if PurePosixPath(path).suffix.lower() not in BINARY_SUFFIXES:
+        return False
+    if not lfs_filtered(repo_dir, path):
+        return True
+    return not head_file(repo_dir, head, path).startswith(LFS_POINTER)
 
 
 def override_file(standards_root, repo_name, name):
@@ -779,6 +834,7 @@ def check_tree(report, repo_dir, allowlist):
                 "The repository has code and no tests; add a tests folder."
             )
         report.add("untested-code", path or "tests/", 0, message)
+    check_data_listed(report, repo_dir, paths)
     for path in paths:
         check_path(report, path)
         suffix = PurePosixPath(path).suffix.lower()
@@ -998,6 +1054,11 @@ def check_diff(report, repo_dir, base, head, body):
             and path.lower() not in docs_added
         ):
             report.add("stray-markdown", path, 0)
+        added_binary = change["status"] == "A" and binary_outside_lfs(
+            repo_dir, head, path
+        )
+        if added_binary:
+            report.add("binary-outside-lfs", path, 0)
         if is_manifest(path):
             head_text = head_file(repo_dir, head, path)
             for n, name in dependency_names(path, change["added"], head_text):
