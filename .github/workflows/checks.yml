@@ -391,6 +391,7 @@ jobs:
       - name: Check out the repository under test
         uses: actions/checkout@v7
         with:
+          fetch-depth: 0
           lfs: true
 
       - name: Check out the standards at the version this workflow was called at
