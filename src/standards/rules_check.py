@@ -39,6 +39,7 @@ CODE_SUFFIXES = {
     ".bash",
     ".kt",
     ".swift",
+    ".dockerfile",
 }
 MARKDOWN_SUFFIXES = {".md", ".rmd", ".qmd"}
 CONFIG_SUFFIXES = {
@@ -185,10 +186,14 @@ SILENCERS = re.compile(
     r"(#\s*noqa\b|#\s*type:\s*ignore\b|#\s*nolint\b|eslint-disable[a-z-]*"
     r"|shellcheck disable|pragma:\s*no cover"
     r"|@pytest\.mark\.(skipif|skip|xfail)\b|pytest\.(skip|xfail)\("
-    r"|^\s*skip\(|\b(it|test|describe)\.skip\(|\bxit\()",
+    r"|^\s*skip\(|\b(it|test|describe)\.(skip|skipIf|todo)\(|\bxit\("
+    r"|#\s*hadolint ignore)",
     re.I,
 )
-RULE_TOKEN = re.compile(r"^[\s:\[\(]*[A-Za-z][A-Za-z0-9_/-]*\d*[\]\s,]*")
+RULE_TOKEN = re.compile(r"^[\s:\[\(=]*[A-Za-z][A-Za-z0-9_/,-]*\d*[\]\s,]*")
+JS_SKIP = re.compile(r"\b(it|test|describe)\.(skip|skipIf|todo)\(|\bxit\(")
+# A Dockerfile has no suffix; it is read as code with # comments.
+DOCKERFILE = re.compile(r"^(Dockerfile|Containerfile)(\..*)?$|\.dockerfile$")
 WORD = re.compile(r"[A-Za-z]{2,}")
 CONSTANT = re.compile(r"^\s*[A-Z][A-Z0-9_]{2,}\s*(=|<-)\s*-?\d")
 SWALLOW = re.compile(
@@ -493,9 +498,21 @@ def reason_after(line, match):
     """Whether a silencing marker is followed by two or more reason words."""
     rest = line[match.end() :]
     marker = match.group(0).lstrip("#").strip().lower()
-    if marker.startswith(("noqa", "type", "nolint", "eslint", "shellcheck")):
+    tools = ("noqa", "type", "nolint", "eslint", "shellcheck", "hadolint")
+    if marker.startswith(tools):
         rest = RULE_TOKEN.sub("", rest, count=1)
+    elif JS_SKIP.match(match.group(0)):
+        # The test's name is not a reason; a comment after the call is.
+        rest = rest.partition("//")[2]
     return len(WORD.findall(rest)) >= 2
+
+
+def code_suffix(path):
+    """Return the suffix the code rules read a path under; Dockerfiles count."""
+    name = PurePosixPath(path).name
+    if DOCKERFILE.match(name):
+        return ".dockerfile"
+    return PurePosixPath(path).suffix.lower()
 
 
 def check_code_line(report, path, n, lines, code, comment, in_doc, allowlist):
@@ -837,7 +854,7 @@ def check_tree(report, repo_dir, allowlist):
     check_data_listed(report, repo_dir, paths)
     for path in paths:
         check_path(report, path)
-        suffix = PurePosixPath(path).suffix.lower()
+        suffix = code_suffix(path)
         if suffix == ".ipynb":
             check_notebook(report, repo_dir, path)
             continue

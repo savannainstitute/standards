@@ -248,5 +248,15 @@
   "data-unlisted",
   "data/raw/sites_2024-05-01.csv",
   0
+ ],
+ [
+  "silenced-check",
+  "Dockerfile",
+  2
+ ],
+ [
+  "silenced-check",
+  "tests/app.test.ts",
+  3
  ]
 ]

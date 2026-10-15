@@ -6,6 +6,16 @@
 \usage{
 plot_means(measurements, value, plot)
 }
+\arguments{
+\item{measurements}{A data frame with one row per measurement.}
+
+\item{value}{Name of the numeric column to average.}
+
+\item{plot}{Name of the column that says which plot each row belongs to.}
+}
+\value{
+A data frame with one row per plot: `plot`, `n` and `mean`.
+}
 \description{
 Mean of a measurement for each plot
 }

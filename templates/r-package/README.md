@@ -30,7 +30,8 @@ line in `DESCRIPTION`, which holds a stand-in name and address, with your own.
   the small tables the tests use, with the reason for each value written beside it. Every expected
   number in a test carries a comment deriving it from those values.
 - `NEWS.md`: one entry per released version.
-- `LICENSE`: the year and the copyright holder of the MIT license, in the two-line form R expects.
+- `LICENSE`: the year and the copyright holder of the MIT license, in the two-line form R expects;
+  `LICENSE.md` holds the full text, which GitHub reads.
 - A vignettes folder, when one is needed, holds long-form guides as R Markdown or Quarto sources.
   Rendered PDF and HTML files are not committed.
 - A data-raw folder holds the scripts that build any data the package ships. Data the package

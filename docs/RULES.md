@@ -283,6 +283,8 @@ shellcheck disable
 pragma: no cover
 @pytest.mark.skip
 @pytest.mark.xfail
+# hadolint ignore=DL3008
+it.skip("a test name"
 ```
 
 ## unsourced-constant
