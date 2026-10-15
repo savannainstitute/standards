@@ -80,6 +80,10 @@ template carries it in its tests folder as well. Each template's README shows ho
 
 ## Files for coding agents
 
+Use the [scientific review record](docs/scientific-review.md) for changes to scientific behavior.
+The [adoption and recovery procedure](docs/adoption-review.md) provides the pilot, writing-review,
+compute, and backup-administration records.
+
 Every repository carries the same seven files for people who work with a coding agent such as Claude
 Code, Codex or Gemini:
 
@@ -103,11 +107,13 @@ read with Python alone. With pre-commit installed, the agent also gets Ruff's fi
 the rule check before it finishes. Air, lintr, markdownlint and the tests run only in the check on
 the pull request.
 
-Nothing needs to be installed for the hooks: each tool finds its file in the repository. Each asks
-once before running hooks it has not seen. Claude Code asks you to trust the folder the first time
-you open it, Codex asks you to review a hook in `/hooks`, and Gemini warns before a new or changed
-hook runs. They are a convenience and can be switched off on your own computer. The check on the
-pull request is what blocks.
+The hook scripts require Python; the full local check also requires pre-commit and Node.js as
+described above. Verify that the installed agent loads the project configuration and runs a planted
+test finding. Codex requires project trust and review of new or changed hooks through `/hooks`, as
+described in the [official hook documentation](https://learn.chatgpt.com/docs/hooks). A tested hook
+script does not establish that every client version loads it. Gemini CLI configuration does not
+establish Antigravity support. Run pre-commit explicitly if hooks are unavailable. Local hooks are
+optional; required pull-request checks provide enforcement.
 
 A repository may add its own notes to `AGENTS.md` and `CLAUDE.md` below the marker line; everything
 above it, and the other five files, must match the copies here, and the check says so when they do

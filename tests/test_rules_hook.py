@@ -48,6 +48,27 @@ def decision(output):
 
 
 @pytest.mark.parametrize(
+    ("content", "warns"),
+    [
+        ("The colour scale is labelled.\n", True),
+        ("Use `colour` for the argument.\n", False),
+        ("> The colour scale is labelled.\n", False),
+        ("```r\ncolour <- 'grey'\n```\n", False),
+        ("The color scale is labeled.\n", False),
+        ("Use `colour` to set the colour.\n", True),
+    ],
+)
+def test_hook_spelling_preserves_literals(tmp_path, content, warns):
+    """Prose is flagged while source literals retain their original text."""
+    target = tmp_path / "README.md"
+    target.write_text(content, encoding="utf-8")
+    code, output = run_hook("post-write", write_payload(target, content))
+    assert code == 0
+    assert ("british-spelling" in json.dumps(output)) == warns
+    assert target.read_text(encoding="utf-8") == content
+
+
+@pytest.mark.parametrize(
     ("name", "content"),
     [
         ("a.py", "x = 1  # fine\n"),

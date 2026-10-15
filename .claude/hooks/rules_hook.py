@@ -159,6 +159,13 @@ def review_findings(path, text, patterns):
     for n, prose in prose_lines(path, text, kind, patterns):
         if any(re.search(p, prose, re.I) for p in patterns["contrast"]):
             found.add((n, "contrast"))
+        spelling_text = (
+            ""
+            if prose.lstrip().startswith(">")
+            else re.sub(patterns["backtick"], "", prose)
+        )
+        if re.search(patterns["british"], spelling_text, re.I):
+            found.add((n, "british-spelling"))
         if re.search(patterns["sales"], prose, re.I):
             found.add((n, "sales-vocabulary"))
         if kind == "code" and re.search(patterns["narration"], prose, re.I):

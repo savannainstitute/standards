@@ -29,6 +29,8 @@
     "\\b(it'?s|this is)\\b[^.;\\n]{1,60},\\s*(never|not)\\b"
   ],
   "sales": "\\b(robust|comprehensive|seamless(ly)?|production-ready)\\b",
+  "british": "\\b(colour(s|ed|ing)?|behaviours?|centres?|metres?|litres?|fibres?|licences?|defence|offence|greys?|programmes?|catalogues?|analys(e|ed|ing)|optimis(e|ed|ing|ation)|organis(e|ed|ation|ations)|realis(e|ed)|recognis(e|ed)|summaris(e|ed)|normalis(e|ed|ation)|visualis(e|ed|ation|ations)|initialis(e|ed|ation)|utilis(e|ed)|minimis(e|ed)|maximis(e|ed)|standardis(e|ed)|categoris(e|ed)|modell(ing|ed)|labell(ing|ed)|cancell(ed|ing)|travell(ing|ed)|signalling|totalling|fulfil|enrol|judgement|ageing|artefacts?|aluminium|sulphur|mould|plough|tyres?|cheque|storey|favour(ite)?|honour|neighbour(s|ing)?|harbour|flavour|humour|practis(e|ed)|paralyse|manoeuvre|oestrogen|foetal|aeroplane|kilometres?|centimetres?|millimetres?|haemoglobin|anaemia|diarrhoea)\\b",
+  "backtick": "`([^`\\n]+)`",
   "narration": "\\b(now we|updated to|as requested|per (the|your) (request|feedback)|changed (this|it) to|this (now|fix) )\\b",
   "divider": "^\\s*(#|//)\\s*[-=*_]{5,}",
   "decision_attribution": "\\(\\s*[A-Z][a-z]+\\b(\\s+[A-Z][a-z]+\\b)?,\\s*\\d{4}-\\d{2}-\\d{2}\\s*\\)|\\b(?i:decided|approved|agreed|confirmed|requested|chose|chosen)\\b(\\s+\\w+){0,3}?\\s+(by\\s+[A-Z][a-z]+\\b|on\\s+\\d{4}-\\d{2}-\\d{2})|\\b[A-Z][a-z]+\\b\\s+(asked|wants|prefers|decided|approved)\\b|\\bper\\s+[A-Z][a-z]+\\b('s\\b|\\s+\\d{4}-\\d{2}-\\d{2})",
