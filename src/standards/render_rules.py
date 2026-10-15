@@ -11,12 +11,23 @@ from standards.markdown_wrap import fill
 from standards.rules import RULES
 
 INTRO = [
-    "Every repository in the organization is checked against this list on "
-    "every pull request. A rule that blocks fails the check, and the pull "
-    "request cannot merge until it passes. A rule that warns prints its "
-    "finding for the author and the reviewer and does not fail the check.",
-    "This file is generated from the rule list in `src/standards/rules.py`; "
-    "edit that file and run `render-rules`.",
+    "This reference documents the organization-specific automated checks "
+    "for Savanna Institute repositories. The contribution requirements take "
+    "effect on December 4, 2026. Each repository is checked in full after "
+    "its initial cleanup; rules identified as change-specific inspect the "
+    "pull request's changes. The same requirements apply to all authors, "
+    "including work produced with coding agents.",
+    "Blocking findings fail the check and prevent merging. Advisory "
+    "findings are warnings for review and do not fail the check. Each "
+    "entry gives the rule ID reported in the log, its scope, the "
+    "requirement, and the corrective action. Examples illustrate detected "
+    "patterns; they are not an exhaustive specification.",
+    "The shared workflow also runs language-specific formatting, static "
+    "analysis, tests, coverage checks, and secret scanning. Those tools "
+    "can fail independently of the rules below. See "
+    "[CONTRIBUTING](https://github.com/savannainstitute/"
+    ".github/blob/main/CONTRIBUTING.md) "
+    "for the pull request process and handling failed checks.",
 ]
 
 
@@ -27,17 +38,50 @@ def wrap(paragraph):
 
 def render():
     """Return the Markdown text of the rule list."""
-    parts = ["# The rules\n\n", *(wrap(paragraph) for paragraph in INTRO)]
-    for rule in RULES:
-        severity = "Blocks" if rule.blocks else "Warns"
-        parts.append(f"## {rule.id}\n\n")
-        parts.append(wrap(f"{severity}. Looks at {rule.scope}."))
-        parts.append(wrap(rule.rule))
-        parts.append(wrap(f"To fix it: {rule.fix}"))
-        if rule.examples:
-            parts.append("Shapes the check looks for:\n\n```text\n")
-            parts.extend(f"{example}\n" for example in rule.examples)
-            parts.append("```\n\n")
+    parts = [
+        "# Automated check reference\n\n",
+        *(wrap(paragraph) for paragraph in INTRO),
+    ]
+    parts.append("## Feedback\n\n")
+    parts.append(
+        wrap(
+            "Report feedback through a standards "
+            "[issue](https://github.com/savannainstitute/"
+            "standards/issues/new) "
+            "or contact Zack directly. Identify the rule ID, "
+            "the affected work, "
+            "and the practical effect: useful requirements, unclear wording, "
+            "unnecessary effort, incorrect findings, or blocked work. Include "
+            "an example and an alternative where possible, and state any "
+            "deadline. Send sensitive examples directly. Feedback before "
+            "December 4 will inform the rollout; "
+            "issues can also be raised afterward."
+        )
+    )
+    for heading, blocks in (
+        ("Blocking requirements", True),
+        ("Advisory findings", False),
+    ):
+        parts.append(f"## {heading}\n\n")
+        for rule in RULES:
+            if rule.blocks != blocks:
+                continue
+            parts.append(f"### {rule.id}\n\n")
+            parts.append(wrap(f"Scope: {rule.scope}."))
+            parts.append(wrap(rule.rule + " " + rule.fix))
+            if rule.examples:
+                parts.append("```text\n")
+                parts.extend(f"{example}\n" for example in rule.examples)
+                parts.append("```\n\n")
+    parts.append("## Maintaining this reference\n\n")
+    parts.append(
+        wrap(
+            "The rule descriptions are generated from "
+            "`src/standards/rules.py` using `render-rules`. "
+            "Update that source and regenerate this file "
+            "when revising a rule description."
+        )
+    )
     return "".join(parts).rstrip("\n") + "\n"
 
 

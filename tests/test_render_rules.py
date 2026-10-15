@@ -15,8 +15,17 @@ def test_rules_doc_is_current():
 def test_every_rule_has_a_heading():
     text = render_rules.render()
     for rule in rules.RULES:
-        assert f"\n## {rule.id}\n" in text
-    assert text.count("\n## ") == len(rules.RULES)
+        assert f"\n### {rule.id}\n" in text
+    assert text.count("\n### ") == len(rules.RULES)
+
+
+def test_blocking_and_advisory_requirements_are_separate():
+    """Each published severity must agree with the check's rule definitions."""
+    text = render_rules.render()
+    blocking, advisory = text.split("## Advisory findings\n", 1)
+    for rule in rules.RULES:
+        section = blocking if rule.blocks else advisory
+        assert f"\n### {rule.id}\n" in section
 
 
 def test_rule_ids_are_unique_and_kebab_case():
