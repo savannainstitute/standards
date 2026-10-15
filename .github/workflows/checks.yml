@@ -224,21 +224,6 @@ jobs:
             fi
           fi
 
-      # Coverage needs both test steps to have finished, or a report would be missing.
-      - name: Test coverage against the floor
-        if: >-
-          ${{ !cancelled() && steps.python-tests.outcome == 'success'
-          && steps.js-tests.outcome == 'success' }}
-        working-directory: repo
-        env:
-          BASE: ${{ github.event.pull_request.base.sha }}
-          HEAD: ${{ github.event.pull_request.head.sha }}
-        run: |
-          coverage-gate --report ../coverage/python.xml \
-            --report ../coverage/js/cobertura-coverage.xml \
-            --base "$BASE" --head "$HEAD" --repo "$GITHUB_REPOSITORY" \
-            --standards-root ../standards
-
       - name: Find the R files and how the repository declares its R packages
         id: r
         if: ${{ !cancelled() }}
@@ -287,6 +272,7 @@ jobs:
             any::lintr
             any::pkgload
             any::testthat
+            any::covr
             roxygen2@${{ steps.r.outputs.roxygen }}
             local::.
 
@@ -310,7 +296,8 @@ jobs:
           STANDARDS_R_LIB: ${{ runner.temp }}/standards-r-lib
         run: |
           mkdir -p "$STANDARDS_R_LIB"
-          Rscript -e 'install.packages(c("lintr", "testthat"), lib = Sys.getenv("STANDARDS_R_LIB"))'
+          Rscript -e 'install.packages(c("lintr", "testthat", "covr"),
+                                       lib = Sys.getenv("STANDARDS_R_LIB"))'
 
       - name: Install Air
         id: air
@@ -344,6 +331,7 @@ jobs:
         run: Rscript ../standards/src/standards/r/run_lintr.R .
 
       - name: R tests
+        id: r-tests
         if: >-
           ${{ !cancelled() && steps.r.outcome == 'success' && steps.r-setup.outcome == 'success'
           && steps.r-deps.outcome != 'failure' && steps.r-renv.outcome != 'failure'
@@ -357,10 +345,39 @@ jobs:
             Rscript ../standards/src/standards/r/run_tests.R .
           fi
 
+      - name: R coverage
+        id: r-coverage
+        if: ${{ !cancelled() && steps.r-tests.outcome == 'success' }}
+        working-directory: repo
+        env:
+          STANDARDS_NO_NEEDS: "true"
+          STANDARDS_R_LIB: ${{ runner.temp }}/standards-r-lib
+        run: |
+          if [ -d tests/testthat ]; then
+            Rscript ../standards/src/standards/r/run_coverage.R . ../coverage/r.xml
+          fi
+
       - name: R help pages match the code
         if: ${{ !cancelled() && steps.r-deps.outcome == 'success' }}
         working-directory: repo
         run: Rscript ../standards/src/standards/r/roxygen_drift.R .
+
+      # Coverage needs every test step to have finished, or a report would be missing.
+      - name: Test coverage against the floor
+        if: >-
+          ${{ !cancelled() && steps.python-tests.outcome == 'success'
+          && steps.js-tests.outcome == 'success' && steps.r-tests.outcome != 'failure'
+          && steps.r-coverage.outcome != 'failure' }}
+        working-directory: repo
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          coverage-gate --report ../coverage/python.xml \
+            --report ../coverage/js/cobertura-coverage.xml \
+            --report ../coverage/r.xml \
+            --base "$BASE" --head "$HEAD" --repo "$GITHUB_REPOSITORY" \
+            --standards-root ../standards
 
   # Building a conda environment takes minutes, so these tests report beside the lint job.
   conda-tests:
@@ -389,7 +406,21 @@ jobs:
           environment-file: environment.yml
           cache-environment: true
 
-      - name: Python tests in that environment
+      - name: Install the standards package into that environment, for its tools
+        run: python -m pip install --quiet ./.standards
+
+      - name: Python tests in that environment, with coverage
+        run: |
+          python -m coverage run --source=. --omit='tests/*,*/tests/*,.*/*,*/.*/*' \
+            -m pytest -p standards.pytest_needs --no-needs --strict-markers tests
+          python -m coverage report --skip-empty
+          python -m coverage xml -q -o coverage.xml
+
+      - name: Test coverage against the floor
         env:
-          PYTHONPATH: .standards/src
-        run: python -m pytest -p standards.pytest_needs --no-needs --strict-markers tests
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          coverage-gate --report coverage.xml \
+            --base "$BASE" --head "$HEAD" --repo "$GITHUB_REPOSITORY" \
+            --standards-root .standards
