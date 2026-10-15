@@ -89,3 +89,16 @@ test_that("the table loads from the data server", {
 
 The check leaves that test out and prints the reason. On your own computer every test runs. The
 function comes from `tests/testthat/helper-needs.R`; leave that file as it is.
+
+## Large files
+
+Images, rasters, point clouds, video, models, archives, PDFs and R data files are stored through Git
+LFS, which keeps the repository small; `.gitattributes` lists the file types. Install it once on
+your computer, before the first commit of such a file:
+
+```text
+git lfs install
+```
+
+A large or growing collection, such as the tiles from every flight, lives in object storage, and the
+README says where.

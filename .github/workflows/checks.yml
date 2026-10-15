@@ -22,6 +22,7 @@ jobs:
         with:
           path: repo
           fetch-depth: 0
+          lfs: true
 
       - name: Check out the standards at the version this workflow was called at
         uses: actions/checkout@v7
@@ -372,6 +373,8 @@ jobs:
     steps:
       - name: Check out the repository under test
         uses: actions/checkout@v7
+        with:
+          lfs: true
 
       - name: Check out the standards at the version this workflow was called at
         uses: actions/checkout@v7

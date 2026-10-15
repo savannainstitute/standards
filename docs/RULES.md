@@ -470,3 +470,42 @@ Shapes the check looks for:
 Co-authored-by: Claude <noreply@anthropic.com>
 Generated with [Claude Code]
 ```
+
+## installer-committed
+
+Blocks. Looks at file paths.
+
+Someone else's software is never committed: no wheel, executable or installer.
+
+To fix it: Delete the file; the README or the environment file says where to get the program.
+
+Shapes the check looks for:
+
+```text
+metashape.whl
+setup.exe
+tool.msi
+app.dmg
+lib.deb
+```
+
+## binary-outside-lfs
+
+Blocks. Looks at the pull request's changes.
+
+A pull request that adds a binary file (an image, raster, point cloud, video, model, archive, PDF,
+spreadsheet or R data file; SVG is text) adds it through Git LFS: the path matches a filter=lfs line
+in .gitattributes and the committed file is the LFS pointer.
+
+To fix it: Run git lfs install once, add the pattern to .gitattributes with git lfs track, and
+commit the file again. A large or growing collection belongs in object storage, named in
+data/README.md.
+
+## data-unlisted
+
+Warns. Looks at files under data/.
+
+Every file under data/ is named in data/README.md, which gives its source, date, license and units
+and says whether it is an input or an output.
+
+To fix it: Add a line for the file to data/README.md, or move the file.
