@@ -4,7 +4,9 @@
   "pyproject.toml": "[project]\nname = \"pkg\"\nversion = \"0.1.0\"\ndependencies = [\n    \"numpy==2.3.0\",\n]\n",
   "src/pkg/__init__.py": "",
   "src/pkg/core.py": "def add(a, b):\n    return a + b\n",
-  "tests/test_core.py": "from pkg.core import add\n\n\ndef test_add():\n    assert add(1, 2) == 3\n\n\ndef test_sub():\n    assert add(1, -1) == 0\n"
+  "tests/test_core.py": "from pkg.core import add\n\n\ndef test_add():\n    assert add(1, 2) == 3\n\n\ndef test_sub():\n    assert add(1, -1) == 0\n",
+  "Dockerfile": "FROM python:3.13-slim\n# hadolint ignore=DL3008 the base image pins apt itself\nRUN apt-get install -y curl\n",
+  "tests/quiet.test.ts": "import { it } from \"vitest\";\n\nit.skip(\"draws\", () => {}); // needs a browser window\n"
  },
  "commit_message": "Document add\n",
  "head": {
@@ -15,7 +17,9 @@
   "tests/test_core.py": "from pkg.core import add\n\n\ndef test_add():\n    assert add(1, 2) == 3\n\n\ndef test_sub():\n    assert add(1, -1) == 0\n",
   ".gitattributes": "*.tif filter=lfs diff=lfs merge=lfs -text\n",
   "data/inputs/map.tif": "version https://git-lfs.github.com/spec/v1\noid sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nsize 12\n",
-  "data/README.md": "# Data\n\nInput: `inputs/map.tif`, an elevation raster from the state GIS office, fetched 2026-10-01, public domain, meters.\n"
+  "data/README.md": "# Data\n\nInput: `inputs/map.tif`, an elevation raster from the state GIS office, fetched 2026-10-01, public domain, meters.\n",
+  "Dockerfile": "FROM python:3.13-slim\n# hadolint ignore=DL3008 the base image pins apt itself\nRUN apt-get install -y curl\n",
+  "tests/quiet.test.ts": "import { it } from \"vitest\";\n\nit.skip(\"draws\", () => {}); // needs a browser window\n"
  },
  "pr_body": "Small change.\n",
  "with_standards_copies": true

@@ -117,6 +117,8 @@ same ids its findings print. The full list with every shape the check looks for 
   pragma: no cover
   @pytest.mark.skip
   @pytest.mark.xfail
+  # hadolint ignore=DL3008
+  it.skip("a test name"
   ```
 
 - `always-true-test`: No test that cannot fail. To fix it: Assert on a value computed from a planted

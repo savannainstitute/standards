@@ -24,7 +24,9 @@
   "tests/test_core.py": "import pytest\n\nfrom pkg.core import add\n\n\n@pytest.mark.skip\ndef test_add():\n    assert True\n",
   "docs/history.md": "Line length is 79 (Zack, 2026-10-12).\n",
   "tools/metashape.whl": "PK not a real wheel\n",
-  "data/inputs/photo.jpg": "JFIF not a real photo\n"
+  "data/inputs/photo.jpg": "JFIF not a real photo\n",
+  "Dockerfile": "FROM python:3.13-slim\n# hadolint ignore=DL3008\nRUN apt-get install -y curl\n",
+  "tests/app.test.ts": "import { it } from \"vitest\";\n\nit.skip(\"two words\", () => {});\n"
  },
  "pr_body": "This isn't a refactor, it's a rewrite.\n\nRobust changes.\n"
 }

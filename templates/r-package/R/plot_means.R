@@ -1,4 +1,9 @@
 #' Mean of a measurement for each plot
+#'
+#' @param measurements A data frame with one row per measurement.
+#' @param value Name of the numeric column to average.
+#' @param plot Name of the column that says which plot each row belongs to.
+#' @return A data frame with one row per plot: `plot`, `n` and `mean`.
 #' @export
 plot_means <- function(measurements, value, plot) {
   absent <- setdiff(c(value, plot), names(measurements))
