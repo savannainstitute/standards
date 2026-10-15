@@ -150,6 +150,15 @@ RULES = (
         ("robust", "comprehensive", "seamless", "production-ready"),
     ),
     Rule(
+        "british-spelling",
+        False,
+        PROSE + ", " + TEXT,
+        "Prose is written in American English. Code is not read, since a "
+        "library's own argument and function names are what they are.",
+        "Use the American spelling.",
+        ("colour", "behaviour", "analyse", "centre", "labelled", "grey"),
+    ),
+    Rule(
         "scratch-file",
         True,
         PATHS,

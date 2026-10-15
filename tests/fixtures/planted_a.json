@@ -10,7 +10,7 @@
  "head": {
   ".DS_Store": "x",
   "R/clean.R": "#' Clean a frame.\n#'\n#' @param x a frame\n#' @export\nclean <- function(x) {\n  y <- tryCatch(read.csv(x), error = function(e) NULL)\n  z <- na.omit(y)\n  doi <- \"10.1000/xyz123\"\n  if (!file.exists(x)) y <- data.frame(sample = rnorm(10))\n  return(z)\n}\n",
-  "README.md": "# Pipeline\n\nA **robust** and comprehensive pipeline \u2014 see `src/pkg/missing.py` and `scripts/run.sh`.\n\nRun `src/pkg/core.py` to start. It's fast, never slow.\n",
+  "README.md": "# Pipeline\n\nA **robust** and comprehensive pipeline \u2014 see `src/pkg/missing.py` and `scripts/run.sh`.\n\nRun `src/pkg/core.py` to start. It's fast, never slow.\n\nThe plots are coloured grey.\n",
   "analysis_v2.py": "print(1)\n",
   "configs/settings.yaml": "# one\n# two\n# three\nkey: value\n",
   "data/raw/sites_2024-05-01.csv": "site,x\na,1\n",

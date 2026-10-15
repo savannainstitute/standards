@@ -258,5 +258,10 @@
   "silenced-check",
   "tests/app.test.ts",
   3
+ ],
+ [
+  "british-spelling",
+  "README.md",
+  7
  ]
 ]

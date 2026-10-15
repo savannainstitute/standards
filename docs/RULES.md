@@ -156,6 +156,26 @@ seamless
 production-ready
 ```
 
+## british-spelling
+
+Warns. Looks at comments, docstrings and Markdown, commit messages and the pull request text.
+
+Prose is written in American English. Code is not read, since a library's own argument and function
+names are what they are.
+
+To fix it: Use the American spelling.
+
+Shapes the check looks for:
+
+```text
+colour
+behaviour
+analyse
+centre
+labelled
+grey
+```
+
 ## scratch-file
 
 Blocks. Looks at file paths.
