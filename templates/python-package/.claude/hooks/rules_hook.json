@@ -1,0 +1,74 @@
+{
+  "characters": "\u2014",
+  "emoji": "[\ud83c\udc00-\ud83e\udeff\u2600-\u27bf\u2b50\u2b55]",
+  "bold": "(\\*\\*|__)[^*_\\n]+\\1",
+  "caps_token": "[A-Z][A-Z0-9]{2,}",
+  "emphasis_words": [
+    "ALL",
+    "ALWAYS",
+    "ANY",
+    "CRITICAL",
+    "DO",
+    "DONT",
+    "EVERY",
+    "IMPORTANT",
+    "MUST",
+    "NEVER",
+    "NOT",
+    "NOTE",
+    "ONLY",
+    "REQUIRED",
+    "SHOULD",
+    "WARNING"
+  ],
+  "glued_before": "._-\"'",
+  "glued_after": "._-(\"'",
+  "contrast": [
+    "\\bnot\\b[^.;\\n]{1,60},\\s*but\\b",
+    "\\bisn'?t\\b[^.;\\n]{1,60},\\s*it'?s\\b",
+    "\\b(it'?s|this is)\\b[^.;\\n]{1,60},\\s*(never|not)\\b"
+  ],
+  "sales": "\\b(robust|comprehensive|seamless(ly)?|production-ready)\\b",
+  "narration": "\\b(now we|updated to|as requested|per (the|your) (request|feedback)|changed (this|it) to|this (now|fix) )\\b",
+  "divider": "^\\s*(#|//)\\s*[-=*_]{5,}",
+  "decision_attribution": "\\(\\s*[A-Z][a-z]+\\b(\\s+[A-Z][a-z]+\\b)?,\\s*\\d{4}-\\d{2}-\\d{2}\\s*\\)|\\b(?i:decided|approved|agreed|confirmed|requested|chose|chosen)\\b(\\s+\\w+){0,3}?\\s+(by\\s+[A-Z][a-z]+\\b|on\\s+\\d{4}-\\d{2}-\\d{2})|\\b[A-Z][a-z]+\\b\\s+(asked|wants|prefers|decided|approved)\\b|\\bper\\s+[A-Z][a-z]+\\b('s\\b|\\s+\\d{4}-\\d{2}-\\d{2})",
+  "code_suffixes": [
+    ".bash",
+    ".cjs",
+    ".js",
+    ".jsx",
+    ".kt",
+    ".mjs",
+    ".py",
+    ".r",
+    ".sh",
+    ".swift",
+    ".ts",
+    ".tsx"
+  ],
+  "markdown_suffixes": [
+    ".md",
+    ".qmd",
+    ".rmd"
+  ],
+  "config_suffixes": [
+    ".cfg",
+    ".ini",
+    ".json",
+    ".jsonc",
+    ".toml",
+    ".txt",
+    ".yaml",
+    ".yml"
+  ],
+  "slash_suffixes": [
+    ".cjs",
+    ".js",
+    ".jsx",
+    ".kt",
+    ".mjs",
+    ".swift",
+    ".ts",
+    ".tsx"
+  ]
+}
