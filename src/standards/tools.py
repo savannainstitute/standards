@@ -6,6 +6,8 @@ configuration and pass every other argument through, which is what the
 pre-commit hooks call.
 """
 
+import json
+import shutil
 import subprocess
 import sys
 from importlib import resources
@@ -74,3 +76,26 @@ def main_yamllint():
 def main_config():
     """Console script for standards-config."""
     sys.exit(print_config_path())
+
+
+def main_markdown():
+    """Run the pinned formatter using the contributor's Node installation."""
+    npx = shutil.which("npx")
+    if npx is None:
+        raise SystemExit(
+            "Install Node.js 24, including npm, then rerun pre-commit."
+        )
+    with open(config_path("package.json"), encoding="utf-8") as stream:
+        version = json.load(stream)["dependencies"]["prettier"]
+    command = [
+        npx,
+        "--yes",
+        f"--package=prettier@{version}",
+        "prettier",
+        "--write",
+        "--config",
+        config_path("prettierrc.yaml"),
+        "--no-editorconfig",
+        *sys.argv[1:],
+    ]
+    sys.exit(subprocess.run(command).returncode)

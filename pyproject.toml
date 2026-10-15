@@ -26,6 +26,7 @@ standards-adopt = "standards.release_bundle:main"
 coverage-gate = "standards.coverage_gate:main"
 standards-ruff = "standards.tools:main_ruff"
 standards-yamllint = "standards.tools:main_yamllint"
+standards-markdown = "standards.tools:main_markdown"
 standards-config = "standards.tools:main_config"
 
 [tool.setuptools.packages.find]

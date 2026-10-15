@@ -87,6 +87,8 @@ def render_patterns():
         "glued_after": rules_check.GLUED_AFTER,
         "contrast": [p.pattern for p in rules_check.CONTRAST],
         "sales": rules_check.SALES.pattern,
+        "british": rules_check.BRITISH.pattern,
+        "backtick": rules_check.BACKTICK.pattern,
         "narration": rules_check.NARRATION.pattern,
         "divider": rules_check.DIVIDER.pattern,
         "decision_attribution": rules_check.DECISION_ATTRIBUTION.pattern,
