@@ -10,6 +10,15 @@ import yaml
 from standards import agent_files, shared_files
 
 
+class IndentedSafeDumper(yaml.SafeDumper):
+    """Indent sequence entries to satisfy the shared YAML style."""
+
+    def increase_indent(self, flow=False, indentless=False):
+        """Keep block sequences indented beneath their mapping key."""
+        del indentless
+        return super().increase_indent(flow, indentless=False)
+
+
 def read_at(root, revision, path):
     """Read a tracked file at the selected commit without checking it out."""
     return subprocess.run(
@@ -85,8 +94,8 @@ def apply(repo_dir, standards_root, revision):
     if len(entries) != 1:
         raise ValueError("pre-commit config must contain one standards entry")
     entries[0]["rev"] = revision
-    files[shared_files.PRE_COMMIT_PATH] = yaml.safe_dump(
-        config, sort_keys=False
+    files[shared_files.PRE_COMMIT_PATH] = yaml.dump(
+        config, Dumper=IndentedSafeDumper, sort_keys=False
     )
     for path, text in files.items():
         target = repo / path

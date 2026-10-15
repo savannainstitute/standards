@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 import yaml
+from yamllint import linter
+from yamllint.config import YamlLintConfig
 
 from standards import agent_files, release_bundle, shared_files
 
@@ -149,3 +151,17 @@ def test_hosted_check_rejects_running_another_release(tmp_path):
     found = dict(shared_files.findings(tmp_path, "b" * 40))
     assert shared_files.CALLER_PATH in found
     assert shared_files.PRE_COMMIT_PATH in found
+
+
+def test_adopted_yaml_passes_shared_lint(releases, tmp_path):
+    """Generated caller and hooks pass the same YAML rules as hosted CI."""
+    root, first, _ = releases
+    repo = tmp_path / "consumer"
+    release_bundle.apply(repo, root, first)
+    config = YamlLintConfig(
+        file=str(
+            Path(__file__).parents[1] / "src/standards/configs/yamllint.yaml"
+        )
+    )
+    for path in (shared_files.CALLER_PATH, shared_files.PRE_COMMIT_PATH):
+        assert list(linter.run((repo / path).read_text(), config)) == []
