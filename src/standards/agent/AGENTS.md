@@ -266,6 +266,18 @@ same ids its findings print. The full list with every shape the check looks for 
   production-ready
   ```
 
+- `british-spelling`: Prose is written in American English. Code is not read, since a library's own
+  argument and function names are what they are. To fix it: Use the American spelling.
+
+  ```text
+  colour
+  behaviour
+  analyse
+  centre
+  labelled
+  grey
+  ```
+
 - `silent-default`: A required input has no silent default; the shapes below are reported for
   review. To fix it: Raise or stop when the input is missing, or state why the default is correct.
 

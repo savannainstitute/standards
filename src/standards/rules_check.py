@@ -136,6 +136,23 @@ GLUED_AFTER = "._-(\"'"
 SALES = re.compile(
     r"\b(robust|comprehensive|seamless(ly)?|production-ready)\b", re.I
 )
+# British forms composed for and measured on the organization's repositories;
+# matched as whole words in prose only.
+BRITISH = re.compile(
+    r"\b(colour(s|ed|ing)?|behaviours?|centres?|metres?|litres?|fibres?"
+    r"|licences?|defence|offence|greys?|programmes?|catalogues?"
+    r"|analys(e|ed|ing)|optimis(e|ed|ing|ation)|organis(e|ed|ation|ations)"
+    r"|realis(e|ed)|recognis(e|ed)|summaris(e|ed)|normalis(e|ed|ation)"
+    r"|visualis(e|ed|ation|ations)|initialis(e|ed|ation)|utilis(e|ed)"
+    r"|minimis(e|ed)|maximis(e|ed)|standardis(e|ed)|categoris(e|ed)"
+    r"|modell(ing|ed)|labell(ing|ed)|cancell(ed|ing)|travell(ing|ed)"
+    r"|signalling|totalling|fulfil|enrol|judgement|ageing|artefacts?"
+    r"|aluminium|sulphur|mould|plough|tyres?|cheque|storey|favour(ite)?"
+    r"|honour|neighbour(s|ing)?|harbour|flavour|humour|practis(e|ed)"
+    r"|paralyse|manoeuvre|oestrogen|foetal|aeroplane|kilometres?"
+    r"|centimetres?|millimetres?|haemoglobin|anaemia|diarrhoea)\b",
+    re.I,
+)
 SCRATCH_NAME = re.compile(
     r"^scratch(pad)?([_-].*)?\.(md|txt|py|r)$"
     r"|^(plans?|summary|time_?log|sessions?|notes?|todo)([_-].*)?\.(md|txt)$"
@@ -462,6 +479,14 @@ def check_prose_line(report, path, n, text, in_code_comment, with_caps):
             report.add("contrast", path, n)
     if SALES.search(text):
         report.add("sales-vocabulary", path, n)
+    british = BRITISH.search(text)
+    if british:
+        report.add(
+            "british-spelling",
+            path,
+            n,
+            f"{british.group(0)}: use the American spelling.",
+        )
     if DECISION_ATTRIBUTION.search(text):
         report.add("decision-attribution", path, n)
     if in_code_comment and NARRATION.search(text):
