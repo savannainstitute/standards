@@ -24,10 +24,10 @@ same ids its findings print. The full list with every shape the check looks for 
 
 ## Rules that block the merge
 
-- `decision-attribution`: A file states what holds, not who decided it or when: no person and date
-  in parentheses, no decision credited to a person or a date, no line saying what a person asked for
-  or wants. To fix it: State the decision itself. The pull request and git history record who made
-  it and when.
+- `decision-attribution`: Project files describe requirements and decisions without attributing them
+  to a person or date. Person-and-date annotations, approval credits, and statements of personal
+  requests are rejected. To fix it: Retain the technical decision; record its authorship and timing
+  in the pull request or commit history.
 
   ```text
   (Name, 2026-10-12)
@@ -37,9 +37,9 @@ same ids its findings print. The full list with every shape the check looks for 
   per Name's request
   ```
 
-- `chat-residue`: No chat left in source: Markdown fences, phrases from a conversation, placeholder
-  comments standing in for code, or a function body that only raises NotImplementedError. To fix it:
-  Finish the code or remove the stub.
+- `chat-residue`: Source files must contain complete code. Conversation fragments, Markdown fences,
+  placeholder comments, and function bodies that only raise NotImplementedError are rejected. To fix
+  it: Implement the missing behavior or remove the incomplete code.
 
   ```text
   here is the updated code
@@ -49,9 +49,10 @@ same ids its findings print. The full list with every shape the check looks for 
   stop("not implemented")
   ```
 
-- `scratch-file`: No scratch or planning files committed: a Markdown or text file named for a plan,
-  summary, time log, session or notes, or any file named scratch or scratchpad. To fix it: Keep them
-  out of the repo, or move a lasting document under docs/ with a name that says what it holds.
+- `scratch-file`: Scratch files and temporary planning records must not be committed. The check
+  identifies Markdown and text filenames associated with plans, summaries, time logs, sessions, or
+  notes, and files named scratch or scratchpad. To fix it: Keep temporary records outside the
+  repository. Place lasting documentation under docs/ with a descriptive filename.
 
   ```text
   notes.md
@@ -60,9 +61,9 @@ same ids its findings print. The full list with every shape the check looks for 
   scratchpad.py
   ```
 
-- `copy-suffix`: No versions kept as copies: a version, new, final, backup, old or copy suffix, or a
-  date in a file name. Files under data/ and raw_data/ are exempt. To fix it: Keep one file; git
-  history holds the versions.
+- `copy-suffix`: Version, new, final, backup, old, copy, and date suffixes in filenames are
+  rejected. Files under data/ and raw_data/ are exempt. To fix it: Maintain one current file and use
+  Git history for earlier versions.
 
   ```text
   analysis_v2.py
@@ -72,8 +73,8 @@ same ids its findings print. The full list with every shape the check looks for 
   map_2026-08-24.py
   ```
 
-- `machine-file`: No machine files, caches or build output. To fix it: Delete the file and add the
-  pattern to .gitignore if it is missing.
+- `machine-file`: Machine-specific files, caches, and build outputs must not be committed. To fix
+  it: Remove the tracked file and add its pattern to .gitignore where needed.
 
   ```text
   .DS_Store
@@ -91,11 +92,11 @@ same ids its findings print. The full list with every shape the check looks for 
   .Rproj.user/
   ```
 
-- `notebook-output`: A committed notebook carries no cell outputs. To fix it: Clear outputs before
-  committing; the pre-commit hook does it.
+- `notebook-output`: Committed Jupyter notebooks must have empty cell outputs. To fix it: Clear
+  outputs before committing; the configured pre-commit hook performs this step.
 
-- `machine-path`: No machine-specific paths. To fix it: Take the path from an argument, a config
-  file or an environment variable.
+- `machine-path`: Paths tied to an individual machine or user account are prohibited. To fix it:
+  Supply paths through arguments, configuration, or environment variables.
 
   ```text
   C:\Users\
@@ -121,8 +122,9 @@ same ids its findings print. The full list with every shape the check looks for 
   it.skip("a test name"
   ```
 
-- `always-true-test`: No test that cannot fail. To fix it: Assert on a value computed from a planted
-  input whose expected answer is derived in a comment.
+- `always-true-test`: Tests must include assertions capable of failing when behavior is incorrect.
+  Unconditionally true assertions are rejected. To fix it: Use a controlled input and document how
+  the expected result was independently derived.
 
   ```text
   assert True
@@ -130,56 +132,55 @@ same ids its findings print. The full list with every shape the check looks for 
   expect(true).toBe(true)
   ```
 
-- `untested-code`: A code file that defines a function or a class has its own test file, named as
-  the layouts name it: `test_<name>.py`, `test-<name>.R` or `<name>.test.ts`. A repository with code
-  and no test file at all fails once. Files that define nothing, such as scripts that only run
-  steps, need no test file of their own. To fix it: Add the test file the finding names, testing
-  what the code file defines.
+- `untested-code`: Each source file defining a function or class requires a corresponding test file:
+  `test_<name>.py`, `test-<name>.R`, or `<name>.test.ts`. Repositories containing code require at
+  least one test file. Scripts defining no functions or classes do not require an individual test
+  file. To fix it: Add the indicated test file and test the behavior defined by the source file.
 
-- `readme-path`: Every path named in backticks in a README or a docs/ file exists in the repo. To
-  fix it: Fix the path or remove the sentence.
+- `readme-path`: Repository paths in inline code in README files and docs/ must resolve to existing
+  files or directories. To fix it: Correct the path or remove the invalid reference.
 
 - `secret-literal`: A string assigned to a name like password, token, secret or api_key is not
   committed unless the line says it is a public fixture and the repo's entry under overrides/ in the
   standards repo cites where it is published. To fix it: Read the value from the environment or a
   file outside the repo. For a public test fixture, add the comment and the cited allowlist entry.
 
-- `standards-copy`: The caller workflow and the files for coding agents match the standards
-  repository's copies, and .pre-commit-config.yaml runs the standards hooks at any commit. Text
-  below the marker line in AGENTS.md and CLAUDE.md belongs to the repository and is not compared.
-  Checked on the pull request only, since pre-commit runs the commit the repository pins. To fix it:
-  Copy the file the finding names from the template for this kind of project in the standards
-  repository. To run newer hooks on your computer, run pre-commit autoupdate.
+- `standards-copy`: The caller workflow and shared coding-agent files must match the central copies.
+  The pre-commit configuration must reference the standards hooks at a commit. Repository-specific
+  text below the marker in AGENTS.md and CLAUDE.md is excluded from comparison. This comparison runs
+  on pull requests; local hooks use their pinned version. To fix it: Restore the indicated file from
+  the appropriate project template. Use pre-commit autoupdate to update local hook versions.
 
-- `stray-markdown`: A pull request that adds a Markdown file outside docs/, other than a README.md
-  or the root AGENTS.md, CLAUDE.md, CHANGELOG.md, NEWS.md, LICENSE.md or HOSTING.md, lists it in the
-  pull request text under a Docs added heading. To fix it: Move the file under docs/, or list it
-  under a Docs added heading with one line on why it exists.
+- `stray-markdown`: New Markdown files outside docs/ must be listed under a Docs added heading in
+  the pull request description. README.md files and root AGENTS.md, CLAUDE.md, CHANGELOG.md,
+  NEWS.md, LICENSE.md, and HOSTING.md are exempt. To fix it: Place the document under docs/ or list
+  its filename and purpose under that heading.
 
-- `dependency-added`: A pull request that adds a dependency to pyproject.toml, a requirements file,
-  environment.yml, DESCRIPTION or package.json names it in the pull request text on a Dependencies:
-  line. To fix it: Add a Dependencies: line naming each new package and what it is for.
+- `dependency-added`: Dependencies added to pyproject.toml, requirements files, environment.yml,
+  DESCRIPTION, or package.json must be identified on a Dependencies: line in the pull request
+  description. To fix it: List each added package and its purpose.
 
-- `test-removed`: A pull request that removes a test function lists it in the pull request text
-  under a Tests removed or skipped heading. To fix it: Keep the test, or list it under that heading
-  with the reason.
+- `test-removed`: Removed test functions must be identified under a Tests removed or skipped heading
+  in the pull request description. To fix it: List each removed test and the reason, or retain the
+  test.
 
-- `fix-without-test`: A pull request that changes source under src/, R/ or packages/ adds at least
-  one line under tests/, or carries a No test because line in the pull request text. To fix it: Add
-  the test that fails without the change, or write the No test because line.
+- `fix-without-test`: Changes to source under src/, R/, or packages/ must include at least one added
+  line under tests/ or a No test because line in the pull request description. To fix it: Add a
+  regression test that fails without the change, or explain why a test change is unnecessary.
 
-- `attribution`: No tool attribution in a commit message or pull request text: no co-author trailer
-  naming a model vendor, no generated-with line, no vendor noreply address. To fix it: Remove the
-  trailer or line; the committed project settings turn it off.
+- `attribution`: Commit messages and pull request descriptions must omit coding-tool attribution,
+  including model-vendor co-author trailers, generated-with statements, and vendor noreply
+  addresses. To fix it: Remove the attribution and use the repository settings that disable
+  automatic tool credits.
 
   ```text
   Co-authored-by: Claude <noreply@anthropic.com>
   Generated with [Claude Code]
   ```
 
-- `installer-committed`: Someone else's software is never committed: no wheel, executable or
-  installer. To fix it: Delete the file; the README or the environment file says where to get the
-  program.
+- `installer-committed`: Third-party software distributions, including wheels, executables, and
+  installers, must not be committed. To fix it: Remove the distribution and document installation in
+  the README or environment specification.
 
   ```text
   metashape.whl
@@ -197,8 +198,8 @@ same ids its findings print. The full list with every shape the check looks for 
 
 ## Rules that warn
 
-- `contrast`: No contrast constructions used for effect. To fix it: State the point directly; drop
-  the half of the sentence that names what it is not.
+- `contrast`: State requirements directly. Rhetorical contrast constructions are flagged for review.
+  To fix it: Remove the unnecessary comparison.
 
   ```text
   not X, but Y
@@ -207,8 +208,9 @@ same ids its findings print. The full list with every shape the check looks for 
   this is X, not Y
   ```
 
-- `narration`: A comment states a constraint or an invariant; it does not narrate the change or the
-  conversation. To fix it: Delete the comment, or rewrite it to say what the code must hold true.
+- `narration`: Comments describe constraints and behavior. Conversational instructions and accounts
+  of the editing process are flagged. To fix it: Replace editing commentary with the relevant
+  technical information, or remove it.
 
   ```text
   now we handle
@@ -218,14 +220,14 @@ same ids its findings print. The full list with every shape the check looks for 
   per your feedback
   ```
 
-- `banner`: No comment block of three or more consecutive comment lines, and no divider line of
-  dashes, equals signs or asterisks. Configuration files, roxygen comments and block comments in the
-  slash languages are exempt. To fix it: Keep one line that states the constraint; move anything
-  longer to the docstring or docs/.
+- `banner`: Comment blocks of three or more consecutive lines and decorative divider lines are
+  flagged. Configuration files, roxygen comments, and block comments in languages using slash-style
+  comments are exempt. To fix it: Use concise comments; place longer explanations in docstrings or
+  documentation.
 
-- `docstring-history`: A docstring or comment states purpose, not history: no dates and no account
-  of what the code did before. To fix it: Git history is the record; remove the history from the
-  docstring.
+- `docstring-history`: Dates and change-history language in comments and docstrings are flagged. To
+  fix it: Describe current purpose and behavior. Preserve change history in commits and pull
+  requests.
 
   ```text
   2023-04-01
@@ -266,8 +268,9 @@ same ids its findings print. The full list with every shape the check looks for 
   production-ready
   ```
 
-- `british-spelling`: Prose is written in American English. Code is not read, since a library's own
-  argument and function names are what they are. To fix it: Use the American spelling.
+- `british-spelling`: Project prose uses American English. The check excludes code identifiers and
+  library argument names. To fix it: Replace flagged spellings with their American English
+  equivalents.
 
   ```text
   colour
@@ -278,8 +281,8 @@ same ids its findings print. The full list with every shape the check looks for 
   grey
   ```
 
-- `silent-default`: A required input has no silent default; the shapes below are reported for
-  review. To fix it: Raise or stop when the input is missing, or state why the default is correct.
+- `silent-default`: Fallback values for required inputs are flagged for review. To fix it: Raise an
+  error when required input is absent, or document why the default is valid.
 
   ```text
   .get(key, None)
@@ -289,25 +292,26 @@ same ids its findings print. The full list with every shape the check looks for 
   x ?? null
   ```
 
-- `unsourced-constant`: A numeric constant assigned to an upper-case name carries its source in a
-  comment on the same or the previous line. To fix it: Write where the number comes from: a config
-  file, the data, a paper, a measurement.
+- `unsourced-constant`: A numeric constant assigned to an uppercase name requires a source comment
+  on the same or preceding line. To fix it: Identify the configuration, dataset, publication, or
+  measurement that supplies the value.
 
-- `swallowed-error`: An error is not swallowed. Python's equivalents are ruff rules E722, BLE001,
-  S110 and S112. To fix it: Let the error propagate, or handle the one case you expect and say
-  which.
+- `swallowed-error`: R error handlers that discard failures are flagged. Python equivalents are
+  checked by Ruff rules E722, BLE001, S110, and S112. To fix it: Propagate the error or explicitly
+  handle and document the expected failure condition.
 
   ```text
   tryCatch(..., error = function(e) NULL)
   try(..., silent = TRUE)
   ```
 
-- `unverified-citation`: A DOI carries a URL beside it, so the reference was read and can be
-  followed. To fix it: Add the URL you read it from, or remove the citation.
+- `unverified-citation`: A DOI requires an accompanying source URL. To fix it: Provide the URL used
+  to verify the reference. A URL makes the reference traceable; the automated check cannot establish
+  that it was read.
 
-- `synthetic-fallback`: No example or synthetic data as a fallback when a file is missing: a
-  missing-file test beside the words below is reported for review. To fix it: Fail when the input is
-  missing. Example data is declared in data/README.md, never substituted.
+- `synthetic-fallback`: Substitution of example or synthetic data when an input file is missing is
+  flagged for review. To fix it: Fail explicitly for missing required inputs. Identify intentional
+  example datasets in data/README.md.
 
   ```text
   sample
@@ -319,9 +323,9 @@ same ids its findings print. The full list with every shape the check looks for 
   np.random
   ```
 
-- `silent-row-drop`: A call that drops or fills missing rows carries a comment on the same line
-  stating the count or the reason. To fix it: Report how many rows are dropped and why, in the
-  comment and in the output.
+- `silent-row-drop`: Calls that drop or fill missing rows require a same-line comment stating the
+  count or reason. To fix it: Document the treatment of missing values and report affected row
+  counts in the output.
 
   ```text
   dropna(
@@ -331,8 +335,8 @@ same ids its findings print. The full list with every shape the check looks for 
   filter(!is.na(
   ```
 
-- `data-unlisted`: Every file under data/ is named in data/README.md, which gives its source, date,
-  license and units and says whether it is an input or an output. To fix it: Add a line for the file
-  to data/README.md, or move the file.
+- `data-unlisted`: Each file under data/ must be listed in data/README.md with its source, date,
+  license, units, and input or output status. To fix it: Add the missing entry or move a file that
+  does not belong in data/.
 
 <!-- Organization copy above; this repository's notes go below. -->
