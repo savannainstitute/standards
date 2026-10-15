@@ -5,10 +5,10 @@ repositories. Initial feedback is due November 13, 2026. Staged migration begins
 all active organization repositories must comply with the standards by March 5, 2027. Feedback
 continues during migration and afterward.
 
-Required checks are activated with each owner during migration, after the setup is verified. Each
-repository is checked in full after its initial cleanup; rules identified as change-specific inspect
-the pull request's changes. The same requirements apply to all authors, including work produced with
-coding agents.
+Under the proposed migration process, required checks are activated with each owner during
+migration, after the setup is verified. Each repository is checked in full after its initial
+cleanup; rules identified as change-specific inspect the pull request's changes. The same
+requirements apply to all authors, including work produced with coding agents.
 
 Blocking findings fail the check and prevent merging. Advisory findings are warnings for review and
 do not fail the check. Each entry gives the rule ID reported in the log, its scope, the requirement,
@@ -19,6 +19,21 @@ The shared workflow also runs language-specific formatting, static analysis, tes
 and secret scanning. Those tools can fail independently of the rules below. See
 [CONTRIBUTING](https://github.com/savannainstitute/.github/blob/main/CONTRIBUTING.md) for the pull
 request process and handling failed checks.
+
+The rule entries describe the proposed release. Existing installations may still follow the
+standards main branch with separate local hook revisions. During migration, install a validated
+release as a complete bundle. The revised daily monitor reports usage and drift without disabling
+workflows, reactivating them, or enabling required checks. Deployment requires release validation
+and owner coordination. Existing protections remain in effect.
+
+Scientific validation is a review responsibility described in CONTRIBUTING. Automated tests and
+coverage cannot establish that a method, reference result, or scientific interpretation is correct.
+
+American English applies to project-authored prose. Preserve external identifiers, data values,
+quotations, and reference titles. The current spelling check excludes inline backtick literals and
+Markdown block quotations. Other false positives remain possible; findings are advisory. Report
+incorrect findings rather than changing required literals. A warning does not require a change to an
+external interface or scientific meaning.
 
 ## Feedback
 
@@ -205,11 +220,11 @@ fixture, add the comment and the cited allowlist entry.
 
 Scope: the files copied from the standards repository.
 
-The caller workflow and shared coding-agent files must match the central copies. The pre-commit
-configuration must reference the standards hooks at a commit. Repository-specific text below the
-marker in AGENTS.md and CLAUDE.md is excluded from comparison. This comparison runs on pull
-requests; local hooks use their pinned version. Restore the indicated file from the appropriate
-project template. Use pre-commit autoupdate to update local hook versions.
+The caller workflow and local hooks must reference the same full commit SHA. Shared coding-agent
+files must match that release. The hosted check verifies the executing workflow revision.
+Repository-specific text below the marker in AGENTS.md and CLAUDE.md is excluded from comparison.
+This comparison runs on pull requests; local hooks use their pinned version. Use standards-adopt
+with the selected release commit to update the workflow, local hooks, and agent files together.
 
 ### stray-markdown
 
@@ -381,7 +396,8 @@ production-ready
 Scope: comments, docstrings and Markdown, commit messages and the pull request text.
 
 Project prose uses American English. The check excludes code identifiers and library argument names.
-Replace flagged spellings with their American English equivalents.
+Inline backtick literals and Markdown block quotations are excluded from spelling checks. Replace
+flagged spellings with their American English equivalents.
 
 ```text
 colour

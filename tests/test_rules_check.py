@@ -42,7 +42,9 @@ def build(repo, scenario):
     """Build the scenario as a git repo; return (base sha, head sha, body)."""
     git(repo, "init", "-q", "-b", "main")
     if scenario.get("with_standards_copies"):
-        shared_files.write_copies(repo)
+        shared_files.write_copies(
+            repo, git(STANDARDS_ROOT, "rev-parse", "HEAD")
+        )
     write_tree(repo, scenario["base"])
     git(repo, "add", "-A")
     git(repo, "commit", "-q", "-m", "Base")
@@ -140,6 +142,9 @@ def test_exempt_entry_removes_only_its_rule_on_its_path(tmp_path):
         "    reason: the planted README names files on purpose\n",
         encoding="utf-8",
     )
+    git(tmp_path / "standards", "init", "-q")
+    git(tmp_path / "standards", "add", "-A")
+    git(tmp_path / "standards", "commit", "-qm", "Override fixture")
     actual = findings_for(tmp_path, scenario, tmp_path / "standards")
     assert actual == expected - {("readme-path", "README.md", 3)}
 

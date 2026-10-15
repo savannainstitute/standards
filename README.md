@@ -129,7 +129,29 @@ not.
 
 Open a pull request here. The rule list is `src/standards/rules.py`; `docs/RULES.md` is rendered
 from it with `render-rules` and the files for coding agents with `render-agent`, and the self-test
-fails if either is out of date or if a rule has no planted example. Every repository runs the check
-from `main`, so a merged change applies to its next pull request. The pre-commit hooks on your
-computer run the commit your repository's `.pre-commit-config.yaml` names, which may be older;
-nothing requires it to move. Run `pre-commit autoupdate` to move it to the newest commit on `main`.
+fails if either is out of date or if a rule has no planted example. Repositories adopt a tested
+commit through an update pull request. The workflow and local hooks must reference that same commit;
+agent files must match the selected release. Do not update hooks independently with
+`pre-commit autoupdate`.
+
+## Adopting and rolling back a release
+
+The standards maintainer validates a release on representative Python, R, and application projects
+before recommending its full commit SHA. With that commit available in a local standards checkout,
+prepare the consumer's update on a branch:
+
+```sh
+standards-adopt --repo-dir PROJECT --standards-root STANDARDS --revision FULL_COMMIT_SHA
+```
+
+The command reads committed files at the selected revision, updates the caller, hooks, and agent
+files together, and preserves project instructions below the agent-file marker. Other pre-commit
+repositories and configured hooks are retained. Inspect the diff, run local checks, and open a pull
+request. The command does not commit, push, merge, or change repository protections. It rejects a
+moving reference or missing release files before writing the bundle.
+
+To roll back, run the same command with the previous release's full SHA and test the resulting pull
+request. A failed update is left unmerged. The creation workflow performs this installation after
+copying the project template, so its workflow and hook pins identify the selected release rather
+than a template's seed revision. Existing installations following main require a coordinated
+migration; publishing a release does not repin those repositories automatically.

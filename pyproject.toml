@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "savannainstitute-standards"
-# pip requires a version; repositories run the check from main, so it never changes.
+# Repositories select immutable Git commits; pip still requires a version field.
 version = "0"
 description = "The Savanna Institute's shared code checks, linter settings and project templates"
 readme = "README.md"
@@ -22,6 +22,7 @@ dependencies = [
 rules-check = "standards.rules_check:main"
 render-rules = "standards.render_rules:main"
 render-agent = "standards.render_agent:main"
+standards-adopt = "standards.release_bundle:main"
 coverage-gate = "standards.coverage_gate:main"
 standards-ruff = "standards.tools:main_ruff"
 standards-yamllint = "standards.tools:main_yamllint"

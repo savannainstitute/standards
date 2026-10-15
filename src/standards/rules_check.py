@@ -479,7 +479,11 @@ def check_prose_line(report, path, n, text, in_code_comment, with_caps):
             report.add("contrast", path, n)
     if SALES.search(text):
         report.add("sales-vocabulary", path, n)
-    british = BRITISH.search(text)
+    # Quoted blocks preserve source wording; inline code preserves identifiers.
+    spelling_text = (
+        "" if text.lstrip().startswith(">") else BACKTICK.sub("", text)
+    )
+    british = BRITISH.search(spelling_text)
     if british:
         report.add(
             "british-spelling",
@@ -1159,7 +1163,8 @@ def run(
     check_tree(report, repo_dir, allowlist)
     # Only the hosted check passes a standards checkout; pre-commit may lag.
     if standards_root:
-        for path, message in shared_files.findings(repo_dir):
+        revision = git(standards_root, "rev-parse", "HEAD").strip()
+        for path, message in shared_files.findings(repo_dir, revision):
             report.add("standards-copy", path, 0, message)
     if base:
         check_diff(report, repo_dir, base, head, pr_body or "")

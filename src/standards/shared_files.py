@@ -2,10 +2,11 @@
 
 A repository carries the caller workflow and the agent files copied from the
 standards repository, and a pre-commit configuration that runs the standards
-hooks at whichever commit the repository chooses. findings() names each one
+hooks at the same immutable commit as the workflow. findings() names each one
 that is missing or out of date and says how to bring it back in line.
 """
 
+import re
 import subprocess
 from importlib import resources
 from pathlib import Path
@@ -17,14 +18,27 @@ from standards import agent_files
 HOOKS_URL = "https://github.com/savannainstitute/standards"
 CALLER_PATH = ".github/workflows/checks.yml"
 PRE_COMMIT_PATH = ".pre-commit-config.yaml"
-# First commit with the markdown-format hook; pre-commit autoupdate moves it.
+# Template seed; release adoption replaces it with the selected bundle commit.
 TEMPLATE_REV = "049d382a82f39372474d45310f682ab6170c0f0c"
 
 
-def caller_text():
+def caller_text(revision=None):
     """Return the text of the caller workflow every repository carries."""
     path = resources.files("standards").joinpath("configs", "caller.yml")
-    return path.read_text(encoding="utf-8")
+    text = path.read_text(encoding="utf-8")
+    return re.sub(
+        r"(checks\.yml@)[^\s]+", r"\g<1>" + (revision or TEMPLATE_REV), text
+    )
+
+
+def caller_revision(text):
+    """Return an immutable standards workflow revision, or None."""
+    match = re.search(
+        r"uses: savannainstitute/standards/\.github/workflows/"
+        r"checks\.yml@([0-9a-f]{40})(?=\s|$)",
+        text,
+    )
+    return match.group(1) if match else None
 
 
 def pre_commit_rev(repo_dir):
@@ -39,14 +53,17 @@ def pre_commit_rev(repo_dir):
     return None
 
 
-def findings(repo_dir):
+def findings(repo_dir, revision=None):
     """Return (path, message) for each copy that is missing or differs."""
     found = []
     caller = Path(repo_dir) / CALLER_PATH
+    text = caller.read_text(encoding="utf-8") if caller.is_file() else ""
+    selected = caller_revision(text)
+    expected = revision or selected or TEMPLATE_REV
     if (
         not caller.is_file()
-        or caller.read_text(encoding="utf-8").rstrip()
-        != caller_text().rstrip()
+        or selected is None
+        or text.rstrip() != caller_text(expected).rstrip()
     ):
         found.append(
             (
@@ -55,12 +72,12 @@ def findings(repo_dir):
                 "project in the standards repository, unchanged.",
             )
         )
-    if pre_commit_rev(repo_dir) is None:
+    if pre_commit_rev(repo_dir) != expected:
         found.append(
             (
                 PRE_COMMIT_PATH,
-                f"Copy {PRE_COMMIT_PATH} from the template for this kind of "
-                f"project; it runs the hooks from {HOOKS_URL}.",
+                f"Use the workflow revision {expected} for the hooks from "
+                f"{HOOKS_URL} in {PRE_COMMIT_PATH}.",
             )
         )
     found.extend(
@@ -97,17 +114,20 @@ def findings(repo_dir):
     return found
 
 
-def write_copies(repo_dir):
+def write_copies(repo_dir, revision=None):
     """Write current copies of every shared file into the repository."""
+    revision = revision or TEMPLATE_REV
+    if not re.fullmatch(r"[0-9a-f]{40}", revision):
+        raise ValueError("standards revision must be a full commit SHA")
     agent_files.write_copies(repo_dir)
     caller = Path(repo_dir) / CALLER_PATH
     caller.parent.mkdir(parents=True, exist_ok=True)
-    caller.write_text(caller_text(), encoding="utf-8", newline="\n")
+    caller.write_text(caller_text(revision), encoding="utf-8", newline="\n")
     config = {
         "repos": [
             {
                 "repo": HOOKS_URL,
-                "rev": TEMPLATE_REV,
+                "rev": revision,
                 "hooks": [{"id": "rules-check"}],
             }
         ]

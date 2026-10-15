@@ -145,11 +145,12 @@ same ids its findings print. The full list with every shape the check looks for 
   standards repo cites where it is published. To fix it: Read the value from the environment or a
   file outside the repo. For a public test fixture, add the comment and the cited allowlist entry.
 
-- `standards-copy`: The caller workflow and shared coding-agent files must match the central copies.
-  The pre-commit configuration must reference the standards hooks at a commit. Repository-specific
-  text below the marker in AGENTS.md and CLAUDE.md is excluded from comparison. This comparison runs
-  on pull requests; local hooks use their pinned version. To fix it: Restore the indicated file from
-  the appropriate project template. Use pre-commit autoupdate to update local hook versions.
+- `standards-copy`: The caller workflow and local hooks must reference the same full commit SHA.
+  Shared coding-agent files must match that release. The hosted check verifies the executing
+  workflow revision. Repository-specific text below the marker in AGENTS.md and CLAUDE.md is
+  excluded from comparison. This comparison runs on pull requests; local hooks use their pinned
+  version. To fix it: Use standards-adopt with the selected release commit to update the workflow,
+  local hooks, and agent files together.
 
 - `stray-markdown`: New Markdown files outside docs/ must be listed under a Docs added heading in
   the pull request description. README.md files and root AGENTS.md, CLAUDE.md, CHANGELOG.md,
@@ -269,8 +270,8 @@ same ids its findings print. The full list with every shape the check looks for 
   ```
 
 - `british-spelling`: Project prose uses American English. The check excludes code identifiers and
-  library argument names. To fix it: Replace flagged spellings with their American English
-  equivalents.
+  library argument names. Inline backtick literals and Markdown block quotations are excluded from
+  spelling checks. To fix it: Replace flagged spellings with their American English equivalents.
 
   ```text
   colour
