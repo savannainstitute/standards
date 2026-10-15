@@ -508,7 +508,7 @@ def reason_after(line, match):
 
 
 def code_suffix(path):
-    """Return the suffix the code rules read a path under; Dockerfiles count."""
+    """Return the suffix the code rules read a path under."""
     name = PurePosixPath(path).name
     if DOCKERFILE.match(name):
         return ".dockerfile"

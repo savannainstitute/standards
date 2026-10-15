@@ -13,5 +13,5 @@ export function needs(reason: string) {
   }
   const leftOut = process.env.STANDARDS_NO_NEEDS === "true";
   return (name: string, body: TestBody) =>
-    it.skipIf(leftOut)(`${name} [needs ${reason}]`, body);
+    it.skipIf(leftOut)(`${name} [needs ${reason}]`, body); // the needs() reason, printed by the reporter
 }
