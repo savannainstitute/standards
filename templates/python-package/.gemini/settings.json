@@ -1,0 +1,18 @@
+{
+  "context": {
+    "fileName": ["AGENTS.md"]
+  },
+  "hooks": {
+    "AfterAgent": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "name": "organization-rules",
+            "command": "python \"$(git rev-parse --show-toplevel)/.claude/hooks/rules_hook.py\" stop gemini"
+          }
+        ]
+      }
+    ]
+  }
+}

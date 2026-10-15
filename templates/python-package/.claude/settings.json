@@ -1,0 +1,41 @@
+{
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "for p in python python3; do if command -v \"$p\" >/dev/null 2>&1; then exec \"$p\" \"${CLAUDE_PROJECT_DIR}/.claude/hooks/rules_hook.py\" pre-shell; fi; done; exit 0"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "for p in python python3; do if command -v \"$p\" >/dev/null 2>&1; then exec \"$p\" \"${CLAUDE_PROJECT_DIR}/.claude/hooks/rules_hook.py\" post-write; fi; done; exit 0"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "for p in python python3; do if command -v \"$p\" >/dev/null 2>&1; then exec \"$p\" \"${CLAUDE_PROJECT_DIR}/.claude/hooks/rules_hook.py\" stop claude; fi; done; exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}

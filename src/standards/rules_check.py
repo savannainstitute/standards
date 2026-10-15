@@ -594,7 +594,7 @@ def check_markdown_file(report, repo_dir, path, text):
         for pattern in CHAT_PROSE:
             if pattern.search(line):
                 report.add("chat-residue", path, n)
-        if BOLD.search(line):
+        if BOLD.search(BACKTICK.sub("", line)):
             report.add(
                 "typography", path, n, "Bold in Markdown; use plain text."
             )

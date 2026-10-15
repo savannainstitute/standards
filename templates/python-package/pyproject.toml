@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "packagename"
+version = "0.1.0"
+description = "One sentence saying what the package does"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.scripts]
+packagename = "packagename.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
