@@ -363,7 +363,7 @@ jobs:
         run: Rscript ../standards/src/standards/r/roxygen_drift.R .
 
       # Coverage needs every test step to have finished, or a report would be missing.
-      - name: Test coverage against the floor
+      - name: Report coverage and enforce repository targets
         if: >-
           ${{ !cancelled() && steps.python-tests.outcome == 'success'
           && steps.js-tests.outcome == 'success' && steps.r-tests.outcome != 'failure'
@@ -417,7 +417,7 @@ jobs:
           python -m coverage report --skip-empty
           python -m coverage xml -q -o coverage.xml
 
-      - name: Test coverage against the floor
+      - name: Report coverage and enforce repository targets
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}

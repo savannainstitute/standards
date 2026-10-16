@@ -22,17 +22,16 @@ skips the ones for a language the repository does not use:
    lines up its tables, and markdownlint checks the rest. Every Dockerfile passes hadolint with the
    settings in `src/standards/configs/hadolint.yaml`.
 6. Tests. Python tests run with pytest, R tests with testthat and JavaScript tests with vitest.
-   Every file of code that defines a function needs its own test file. The tests must run at least
-   75% of the lines of Python and JavaScript code. A repository that was below that when it joined
-   the standard may not fall below where it started, and each pull request must test at least 90% of
-   the code lines it changes until the repository reaches 75%. The numbers are in
-   `src/standards/configs/coverage.yaml`.
+   Every file of code that defines a function needs its own test file. Coverage reports identify
+   untested lines. Numeric targets are set per repository through a reviewed policy in the selected
+   standards release; without a target, coverage is reported for review. See
+   [repository coverage policies](overrides/README.md#coverage-targets) for configuration.
 7. The rules in `docs/RULES.md`. Each rule says what it looks for, whether it blocks the merge or
    only warns, and how to fix a finding.
 
 The rules about writing style (dashes and capitals, long comment blocks, a few phrasings and words)
-only warn. What blocks is what nobody would defend: a secret, a machine file, chat left in source, a
-silenced check with no reason, a removed test with no explanation.
+only warn. Blocking checks include secrets, machine-specific files, conversation fragments in
+source, unexplained suppression of checks, and unexplained removal of tests.
 
 A failing check prints one line per finding: the file, the line, the rule, and what to change. Every
 part of the check runs even when an earlier part fails, so one push shows every finding. Fix them
