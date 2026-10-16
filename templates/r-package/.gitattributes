@@ -1,3 +1,5 @@
+* text=auto eol=lf
+
 # Binary files go through Git LFS: each template copies this file as its .gitattributes. The
 # patterns are the binary-outside-lfs rule's list; run git lfs install once on your computer.
 *.png filter=lfs diff=lfs merge=lfs -text

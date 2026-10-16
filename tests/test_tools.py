@@ -1,8 +1,12 @@
 """The tool entry points find the shipped settings and refuse bad usage."""
 
+import shlex
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from standards import tools
 
@@ -37,3 +41,27 @@ def test_markdown_missing_node_explains_installation(monkeypatch):
     monkeypatch.setattr(tools.shutil, "which", lambda _name: None)
     with pytest.raises(SystemExit, match="Install Node.js 24"):
         tools.main_markdown()
+
+
+def test_local_rules_hook_accepts_the_standards_repository():
+    """Rule examples pass when the hook loads their recorded exceptions."""
+    root = Path(__file__).parents[1]
+    config = yaml.safe_load((root / ".pre-commit-config.yaml").read_text())
+    hooks = config["repos"][0]["hooks"]
+    entry = next(
+        hook["entry"] for hook in hooks if hook["id"] == "rules-check"
+    )
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "standards.rules_check",
+            *shlex.split(entry)[1:],
+        ],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "0 blocking finding(s)" in result.stdout
