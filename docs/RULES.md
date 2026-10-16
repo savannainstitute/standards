@@ -1,9 +1,10 @@
 # Automated check reference
 
 This reference documents the organization-specific automated checks proposed for Savanna Institute
-repositories. Initial feedback is due November 13, 2026. Staged migration begins December 4, 2026;
-all active organization repositories must comply with the standards by March 5, 2027. Feedback
-continues during migration and afterward.
+repositories. Initial feedback is due November 13, 2026. The draft schedule starts staged migration
+on December 4, 2026, with a March 5, 2027 target for active repositories to meet the agreed
+standards. Requirements and dates are open for review. Feedback continues during migration and
+afterward.
 
 Under the proposed migration process, required checks are activated with each owner during
 migration, after the setup is verified. Each repository is checked in full after its initial
@@ -20,11 +21,8 @@ and secret scanning. Those tools can fail independently of the rules below. See
 [CONTRIBUTING](https://github.com/savannainstitute/.github/blob/main/CONTRIBUTING.md) for the pull
 request process and handling failed checks.
 
-The rule entries describe the proposed release. Existing installations may still follow the
-standards main branch with separate local hook revisions. During migration, install a validated
-release as a complete bundle. The revised daily monitor reports usage and drift without disabling
-workflows, reactivating them, or enabling required checks. Deployment requires release validation
-and owner coordination. Existing protections remain in effect.
+During migration, install a validated release as a complete bundle. Required checks are activated
+after verification with the owner. Report the selected release when discussing a check's behavior.
 
 Coverage reports identify untested lines. Numeric coverage targets are optional and
 repository-specific, recorded with a rationale in the selected standards release. Configured targets

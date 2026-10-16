@@ -1,9 +1,10 @@
 # Savanna Institute code standards
 
-This repository holds the checks that every Savanna Institute repository runs on each pull request,
-the settings those checks use, and the templates new repositories start from. Nothing here needs to
-be installed by hand: a repository runs the checks through one short workflow file, and the same
-checks can run on your own computer before you commit.
+This repository contains the shared checks, configuration, and starter templates for the GitHub
+standards under review. The
+[contribution guide](https://github.com/savannainstitute/.github/blob/main/CONTRIBUTING.md)
+describes the review process and adoption schedule. Repositories adopt a tested version during
+migration; publishing a standards change does not update pinned repositories automatically.
 
 ## What the check does
 
@@ -133,6 +134,18 @@ not.
 - `tests/`: the self-test. Every rule is planted in a fixture and caught.
 
 ## Changing a rule
+
+To work on this standards repository, activate a Python virtual environment and install the working
+copy and pre-commit before running the local checks:
+
+```sh
+python -m pip install -e . pre-commit
+pre-commit install
+pre-commit run --all-files
+```
+
+These local hooks use that environment so they check the working source and its repository-specific
+exceptions. Consumer repositories use the versioned hooks described above.
 
 Open a pull request here. The rule list is `src/standards/rules.py`; `docs/RULES.md` is rendered
 from it with `render-rules` and the files for coding agents with `render-agent`, and the self-test

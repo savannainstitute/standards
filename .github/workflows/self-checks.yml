@@ -10,3 +10,12 @@ concurrency:
 jobs:
   checks:
     uses: ./.github/workflows/checks.yml
+  local-hooks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - run: python -m pip install -e . pre-commit==4.3.0
+      - run: pre-commit run --all-files

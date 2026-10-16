@@ -165,3 +165,32 @@ def test_adopted_yaml_passes_shared_lint(releases, tmp_path):
     )
     for path in (shared_files.CALLER_PATH, shared_files.PRE_COMMIT_PATH):
         assert list(linter.run((repo / path).read_text(), config)) == []
+
+
+@pytest.mark.parametrize(
+    "template",
+    sorted((Path(__file__).parents[1] / "templates").iterdir()),
+    ids=lambda path: path.name,
+)
+def test_template_checkout_keeps_yaml_lf_with_autocrlf(tmp_path, template):
+    """A Windows-style checkout must preserve the YAML linter's LF input."""
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / ".gitattributes").write_bytes(
+        (template / ".gitattributes").read_bytes()
+    )
+    expected = b"name: example\nvalue: 1\n"
+    (source / "example.yaml").write_bytes(expected)
+    git(source, "init", "-b", "main")
+    git(source, "add", ".")
+    git(source, "commit", "-m", "Record a template configuration")
+    checkout = tmp_path / "checkout"
+    git(
+        tmp_path,
+        "-c",
+        "core.autocrlf=true",
+        "clone",
+        str(source),
+        str(checkout),
+    )
+    assert (checkout / "example.yaml").read_bytes() == expected
