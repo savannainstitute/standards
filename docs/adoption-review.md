@@ -8,9 +8,11 @@ contributor who will perform the pilot and the administrator who can recover acc
 there are no uncommitted changes before applying a release bundle.
 
 List blocking findings separately from advisory findings. Agree on required cleanup before enabling
-required checks. A repository below the coverage floor needs a measured baseline and a tested
-exception; documentation alone does not change the check. Do not rename a repository, rewrite its
-history, change visibility, or change deployment credentials as an incidental part of installing CI.
+required checks. Identify the behavior and failure cases the project must test. Review coverage
+reports and record any justified numeric targets through the central repository policy. Verify
+passing and failing cases before adopting the release that enforces those targets. Do not rename a
+repository, rewrite its history, change visibility, or change deployment credentials as an
+incidental part of installing CI.
 
 ## Adoption and rollback
 

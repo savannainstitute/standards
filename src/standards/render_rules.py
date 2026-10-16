@@ -40,6 +40,13 @@ INTRO = [
     "disabling workflows, reactivating them, or enabling required checks. "
     "Deployment requires release validation and owner coordination. "
     "Existing protections remain in effect.",
+    "Coverage reports identify untested lines. Numeric coverage targets "
+    "are optional and repository-specific, recorded with a rationale in "
+    "the selected standards release. Configured targets block on "
+    "insufficient coverage or missing measurements. Failed tests block "
+    "independently of coverage targets. See "
+    "[coverage policy configuration]"
+    "(../overrides/README.md#coverage-targets).",
     "Scientific validation is a review responsibility described in "
     "CONTRIBUTING. Automated tests and coverage cannot establish that a "
     "method, reference result, or scientific interpretation is correct.",

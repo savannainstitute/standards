@@ -1,19 +1,16 @@
-"""Fail the check when a repository's test coverage is under the floor.
+"""Report coverage and enforce centrally reviewed repository targets.
 
 Usage:
     coverage-gate --report FILE [--report FILE ...] [--repo-dir DIR]
                   [--base SHA] [--head SHA] [--repo OWNER/NAME]
                   [--standards-root DIR]
 
-Each report is a Cobertura XML file, which coverage.py and vitest write. A
-repository with no recorded starting value needs the floor in configs/
-coverage.yaml. A repository whose starting value is recorded under
-overrides/<repo>/coverage.yaml, because it was below the floor when it was
-cleaned up, may not fall below that value, and each pull request must cover
-the changed-lines share of the code lines it adds, until it reaches the floor.
+Cobertura reports measure executed lines. Repository targets and rationale
+live in overrides/<repo>/coverage.yaml in the selected standards release.
 """
 
 import argparse
+import math
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path, PurePosixPath
@@ -24,10 +21,51 @@ from standards import rules_check, tools
 
 
 def settings():
-    """Return the floor and the changed-lines share from the shipped file."""
+    """Return the shared reporting defaults."""
     path = Path(tools.config_path("coverage.yaml"))
-    data = yaml.safe_load(path.read_text(encoding="utf-8"))
-    return float(data["floor_percent"]), float(data["changed_lines_percent"])
+    return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+def policy(standards_root, repo_name):
+    """Load and validate targets from the selected standards release."""
+    data = settings()
+    file = rules_check.override_file(
+        standards_root, repo_name, "coverage.yaml"
+    )
+    if file is None:
+        return data
+    override = yaml.safe_load(file.read_text(encoding="utf-8"))
+    allowed = {
+        "floor_percent",
+        "changed_lines_percent",
+        "rationale",
+        "start_percent",
+        "measured_at_commit",
+    }
+    if not isinstance(override, dict) or set(override) - allowed:
+        raise SystemExit(f"{file}: invalid coverage policy fields")
+    if "start_percent" in override:
+        if override["start_percent"] is None:
+            raise SystemExit(f"{file}: start_percent needs a numeric value")
+        if "floor_percent" in override:
+            raise SystemExit(f"{file}: specify start_percent or floor_percent")
+        if not str(override.get("measured_at_commit") or "").strip():
+            raise SystemExit(f"{file}: start_percent needs measured_at_commit")
+        override["floor_percent"] = override["start_percent"]
+    elif not str(override.get("rationale") or "").strip():
+        raise SystemExit(f"{file}: coverage targets need a rationale")
+    for key in ("floor_percent", "changed_lines_percent"):
+        value = override.get(key)
+        if value is not None:
+            if (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(value)
+                or not 0 <= value <= 100
+            ):
+                raise SystemExit(f"{file}: {key} must be between 0 and 100")
+    data.update(override)
+    return data
 
 
 def repo_path(repo_dir, sources, filename):
@@ -85,56 +123,35 @@ def percent(covered, measured):
     return round(100 * covered / measured, 1) if measured else 100.0
 
 
-def decide(repo_percent, start, changed_counts):
-    """Return (passes, message) for the repository and its change."""
-    floor, changed_floor = settings()
-    if repo_percent >= floor:
-        return True, f"Coverage is {repo_percent}%, at or above {floor:g}%."
-    if start is None:
+def decide(repo_percent, targets, changed_counts):
+    """Return (passes, message) for explicitly configured targets."""
+    floor = targets.get("floor_percent")
+    changed_floor = targets.get("changed_lines_percent")
+    if floor is not None and repo_percent < floor:
         return False, (
-            f"Coverage is {repo_percent}%; a repository needs {floor:g}%. "
-            "Add tests for the files in the table above with the most "
-            "uncovered lines."
+            f"Coverage is {repo_percent}%, below this repository's "
+            f"{floor:g}% target."
         )
-    if repo_percent < start:
-        return False, (
-            f"Coverage is {repo_percent}%, below the {start}% recorded "
-            "for this repository; add tests until it is back."
-        )
-    covered, measured = changed_counts
-    if not measured:
+    if changed_floor is not None and changed_counts is not None:
+        covered, measured = changed_counts
+        if measured and 100 * covered / measured < changed_floor:
+            return False, (
+                f"Tests cover {percent(covered, measured)}% of changed lines; "
+                f"this repository requires {changed_floor:g}%."
+            )
+    if floor is None and changed_floor is None:
         return True, (
-            f"Coverage is {repo_percent}%, not below {start}%, and no "
-            "changed line is code the tests measure."
+            f"Coverage is {repo_percent}%; reporting only. Review untested "
+            "behavior and scientific validation evidence."
         )
-    share = percent(covered, measured)
-    if share < changed_floor:
-        return False, (
-            f"Tests cover {share}% of the changed lines; until the repository "
-            f"reaches {floor:g}%, each pull request covers "
-            f"{changed_floor:g}% of the code it changes."
-        )
-    return True, (
-        f"Coverage is {repo_percent}%, not below {start}%, and tests cover "
-        f"{share}% of the changed lines."
-    )
-
-
-def recorded_start(standards_root, repo_name):
-    """Return the starting value recorded for the repository, or None."""
-    file = rules_check.override_file(
-        standards_root, repo_name, "coverage.yaml"
-    )
-    if file is None:
-        return None
-    data = yaml.safe_load(file.read_text(encoding="utf-8")) or {}
-    if not str(data.get("measured_at_commit") or "").strip():
-        raise SystemExit(f"{file}: start_percent needs measured_at_commit")
-    return float(data["start_percent"])
+    message = f"Coverage is {repo_percent}%; configured targets pass."
+    if changed_floor is not None and changed_counts is None:
+        message += " Changed-line target applies to pull requests with a base."
+    return True, message
 
 
 def main(argv=None):
-    """Command line entry point; returns 1 when coverage is under the floor."""
+    """Report coverage; return 1 for unmet targets or missing measurements."""
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -146,13 +163,21 @@ def main(argv=None):
     parser.add_argument("--repo")
     parser.add_argument("--standards-root")
     args = parser.parse_args(argv)
+    targets = policy(args.standards_root, args.repo)
+    enforced = any(
+        targets.get(key) is not None
+        for key in ("floor_percent", "changed_lines_percent")
+    )
     reports = [r for r in args.report if Path(r).is_file()]
     if not reports:
         print("No coverage report was written; nothing to measure.")
-        return 0
+        return 1 if enforced else 0
     lines = load_lines(args.repo_dir, reports)
-    repo_percent = percent(*total(lines))
-    start = recorded_start(args.standards_root, args.repo)
+    covered, measured = total(lines)
+    if not measured:
+        print("Coverage report contains no measured lines.")
+        return 1 if enforced else 0
+    repo_percent = 100 * covered / measured
     added = {}
     if args.base:
         diff = rules_check.parse_diff(args.repo_dir, args.base, args.head)
@@ -160,7 +185,8 @@ def main(argv=None):
             path: [n for n, _ in change["added"]]
             for path, change in diff.items()
         }
-    passes, message = decide(repo_percent, start, changed(lines, added))
+    changed_counts = changed(lines, added) if args.base else None
+    passes, message = decide(repo_percent, targets, changed_counts)
     print(message)
     return 0 if passes else 1
 
